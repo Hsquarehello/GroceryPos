@@ -34,6 +34,7 @@ export default function CustomersScreen({ navigation }: Props) {
   const [showNewCustomer, setShowNewCustomer] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [search, setSearch] = useState("");
 
   const loadCustomers = useCallback(async () => {
     setRefreshing(true);
@@ -87,6 +88,14 @@ export default function CustomersScreen({ navigation }: Props) {
     (sum, customer) => sum + customer.total_debt,
     0,
   );
+  const normalizedSearch = search.trim().toLocaleLowerCase();
+  const visibleCustomers = normalizedSearch
+    ? customers.filter((customer) =>
+        [customer.name, customer.phone ?? ""].some((value) =>
+          value.toLocaleLowerCase().includes(normalizedSearch),
+        ),
+      )
+    : customers;
 
   return (
     <View style={styles.screen}>
@@ -122,10 +131,37 @@ export default function CustomersScreen({ navigation }: Props) {
               {totalDebt.toLocaleString()} MMK
             </Text>
           </View>
-          <Text style={styles.customerCount}>{customers.length} customers</Text>
+          <Text style={styles.customerCount}>
+            {visibleCustomers.length} of {customers.length} customers
+          </Text>
         </View>
 
-        {customers.map((customer) => (
+        <View style={styles.searchBox}>
+          <MaterialCommunityIcons name="magnify" size={20} color="#71837a" />
+          <TextInput
+            value={search}
+            onChangeText={setSearch}
+            style={styles.searchInput}
+            placeholder="Search by name or phone"
+            placeholderTextColor="#9aaa9f"
+            autoCapitalize="none"
+            returnKeyType="search"
+          />
+          {!!search && (
+            <Pressable
+              style={styles.clearSearch}
+              onPress={() => setSearch("")}
+              accessibilityLabel="Clear customer search">
+              <MaterialCommunityIcons
+                name="close-circle"
+                size={19}
+                color="#9aaa9f"
+              />
+            </Pressable>
+          )}
+        </View>
+
+        {visibleCustomers.map((customer) => (
           <View key={customer.id} style={styles.card}>
             <View style={styles.cardInfo}>
               <Text style={styles.name}>{customer.name}</Text>
@@ -159,6 +195,9 @@ export default function CustomersScreen({ navigation }: Props) {
 
         {!customers.length && (
           <Text style={styles.emptyText}>No customers yet.</Text>
+        )}
+        {!!customers.length && !visibleCustomers.length && (
+          <Text style={styles.emptyText}>No matching customers.</Text>
         )}
 
         <Pressable
@@ -295,6 +334,24 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   customerCount: { color: "#d6e5dc", fontWeight: "700" },
+  searchBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderColor: "#dce6e0",
+    borderWidth: 1,
+    borderRadius: 9,
+    paddingHorizontal: 12,
+    marginBottom: 14,
+  },
+  searchInput: {
+    flex: 1,
+    color: "#173f35",
+    fontSize: 14,
+    paddingVertical: 11,
+    paddingHorizontal: 8,
+  },
+  clearSearch: { padding: 4 },
   card: {
     backgroundColor: "#fff",
     borderWidth: 1,

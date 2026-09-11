@@ -28,6 +28,18 @@ type Props = NativeStackScreenProps<
   RootStackParamList,
   "AddProduct" | "EditProduct"
 >;
+type UnitCategory = "unit" | "weight";
+type SelectedUnit = "pcs" | "kg" | "g" | "viss" | "tcl";
+
+const weightUnits: Array<{
+  value: Exclude<SelectedUnit, "pcs">;
+  label: string;
+}> = [
+  { value: "kg", label: "kg (Kilograms)" },
+  { value: "g", label: "g (Grams)" },
+  { value: "viss", label: "viss (ပိဿာ)" },
+  { value: "tcl", label: "tcl (ကျပ်သား)" },
+];
 
 const blankForm: ProductInput = {
   barcode: null,
@@ -60,6 +72,9 @@ export default function AddProductScreen({ navigation, route }: Props) {
   const [baseProducts, setBaseProducts] = useState<Product[]>([]);
   const [saving, setSaving] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
+  const [showWeightPicker, setShowWeightPicker] = useState(false);
+  const [unitCategory, setUnitCategory] = useState<UnitCategory>("unit");
+  const [selectedUnit, setSelectedUnit] = useState<SelectedUnit>("pcs");
 
   // Scanner မှ Barcode ပါလာပါက Form ထဲသို့ Auto ထည့်ပေးခြင်း
   useEffect(() => {
@@ -84,6 +99,10 @@ export default function AddProductScreen({ navigation, route }: Props) {
             conversion_rate: prod.conversion_rate,
             is_base_unit: prod.is_base_unit,
           });
+          const loadedUnit: SelectedUnit =
+            prod.selling_unit === "unit" ? "pcs" : prod.selling_unit;
+          setSelectedUnit(loadedUnit);
+          setUnitCategory(loadedUnit === "pcs" ? "unit" : "weight");
         }
       });
     }
@@ -103,6 +122,30 @@ export default function AddProductScreen({ navigation, route }: Props) {
           : Number(value.replace(/[^0-9.]/g, "")) || 0,
     }));
   };
+
+  const updateSelectedUnit = (nextUnit: SelectedUnit) => {
+    setSelectedUnit(nextUnit);
+    setUnitCategory(nextUnit === "pcs" ? "unit" : "weight");
+    setForm((current) => ({
+      ...current,
+      selling_unit: nextUnit === "pcs" ? "unit" : nextUnit,
+    }));
+  };
+
+  const selectUnitCategory = (nextCategory: UnitCategory) => {
+    setUnitCategory(nextCategory);
+    if (nextCategory === "unit") {
+      updateSelectedUnit("pcs");
+    } else if (selectedUnit === "pcs") {
+      updateSelectedUnit("kg");
+    }
+  };
+
+  const selectedUnitLabel =
+    selectedUnit === "pcs"
+      ? "pcs"
+      : (weightUnits.find((unit) => unit.value === selectedUnit)?.label ??
+        selectedUnit);
 
   // Select လုပ်ထားသော Base Product ၏ Package Stock ကို တွက်ချက်ခြင်း
   const selectedParent = baseProducts.find((p) => p.id === form.parent_id);
@@ -233,32 +276,44 @@ export default function AddProductScreen({ navigation, route }: Props) {
         {/* 2. Unit Type Selection */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Unit & Packaging Config</Text>
-          <Text style={styles.label}>Select Product Unit Type</Text>
+          <Text style={styles.label}>Product Unit Category</Text>
 
           <View style={styles.segmentContainer}>
-            {(["unit", "kg", "g"] as const).map((unit) => (
+            {(["unit", "weight"] as const).map((category) => (
               <Pressable
-                key={unit}
+                key={category}
                 style={[
                   styles.segmentBtn,
-                  form.selling_unit === unit && styles.segmentActive,
+                  unitCategory === category && styles.segmentActive,
                 ]}
-                onPress={() =>
-                  setForm((prev) => ({ ...prev, selling_unit: unit }))
-                }>
+                onPress={() => selectUnitCategory(category)}>
                 <Text
                   style={[
                     styles.segmentText,
-                    form.selling_unit === unit && styles.segmentActiveText,
+                    unitCategory === category && styles.segmentActiveText,
                   ]}>
-                  {unit === "unit" ? "By unit" : `By ${unit}`}
+                  {category === "unit" ? "By Unit" : "By Weight"}
                 </Text>
               </Pressable>
             ))}
           </View>
+          {unitCategory === "weight" && (
+            <>
+              <Text style={styles.label}>Select Weight Unit</Text>
+              <Pressable
+                style={styles.pickerTrigger}
+                onPress={() => setShowWeightPicker(true)}>
+                <Text style={styles.pickerText}>{selectedUnitLabel}</Text>
+                <MaterialCommunityIcons
+                  name="chevron-down"
+                  size={20}
+                  color="#60736a"
+                />
+              </Pressable>
+            </>
+          )}
           <Text style={styles.infoSubtext}>
-            Weighted products use price and stock in the selected unit. Barcode
-            is optional.
+            Price and stock use the selected unit. Barcode is optional.
           </Text>
 
           <View style={styles.segmentContainer}>
@@ -290,11 +345,15 @@ export default function AddProductScreen({ navigation, route }: Props) {
                 !form.is_base_unit && styles.segmentActive,
               ]}
               onPress={() =>
-                setForm((prev) => ({
-                  ...prev,
-                  is_base_unit: false,
-                  selling_unit: "unit",
-                }))
+                (() => {
+                  setUnitCategory("unit");
+                  setSelectedUnit("pcs");
+                  setForm((prev) => ({
+                    ...prev,
+                    is_base_unit: false,
+                    selling_unit: "unit",
+                  }));
+                })()
               }>
               <Text
                 style={[
@@ -345,7 +404,7 @@ export default function AddProductScreen({ navigation, route }: Props) {
           <Text style={styles.cardTitle}>Pricing & Stock</Text>
           <View style={styles.row}>
             <View style={styles.col}>
-              <Text style={styles.label}>Cost Price</Text>
+              <Text style={styles.label}>Cost Price per {selectedUnit}</Text>
               <TextInput
                 style={styles.input}
                 value={String(form.cost_price || "")}
@@ -356,7 +415,7 @@ export default function AddProductScreen({ navigation, route }: Props) {
               />
             </View>
             <View style={styles.col}>
-              <Text style={styles.label}>Selling Price *</Text>
+              <Text style={styles.label}>Selling Price per {selectedUnit}</Text>
               <TextInput
                 style={styles.input}
                 value={String(form.selling_price || "")}
@@ -371,7 +430,7 @@ export default function AddProductScreen({ navigation, route }: Props) {
           {/* Stock Input Handling */}
           {form.is_base_unit ? (
             <>
-              <Text style={styles.label}>Available Base Stock Qty</Text>
+              <Text style={styles.label}>Available Stock ({selectedUnit})</Text>
               <TextInput
                 style={styles.input}
                 value={String(form.stock_qty || "")}
@@ -427,6 +486,42 @@ export default function AddProductScreen({ navigation, route }: Props) {
             {saving ? "Saving..." : editing ? "Update Product" : "Save Product"}
           </Text>
         </Pressable>
+
+        {/* Parent Product Picker Modal */}
+        <Modal
+          visible={showWeightPicker}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowWeightPicker(false)}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Select Weight Unit</Text>
+              {weightUnits.map((unit) => (
+                <Pressable
+                  key={unit.value}
+                  style={styles.modalItem}
+                  onPress={() => {
+                    updateSelectedUnit(unit.value);
+                    setShowWeightPicker(false);
+                  }}>
+                  <Text style={styles.modalItemText}>{unit.label}</Text>
+                  {selectedUnit === unit.value && (
+                    <MaterialCommunityIcons
+                      name="check"
+                      size={20}
+                      color="#e77945"
+                    />
+                  )}
+                </Pressable>
+              ))}
+              <Pressable
+                style={styles.closeBtn}
+                onPress={() => setShowWeightPicker(false)}>
+                <Text style={styles.closeText}>Cancel</Text>
+              </Pressable>
+            </View>
+          </View>
+        </Modal>
 
         {/* Parent Product Picker Modal */}
         <Modal visible={showPicker} transparent animationType="fade">

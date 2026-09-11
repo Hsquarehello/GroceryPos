@@ -18,10 +18,14 @@ type Props = NativeStackScreenProps<RootStackParamList, "Reports">;
 
 const emptyReport: DailyReport = {
   revenue: 0,
+  discount_total: 0,
+  net_collected: 0,
+  credit_outstanding: 0,
   cogs: 0,
   profit: 0,
   transaction_count: 0,
-  item_count: 0,
+  total_items: 0,
+  total_weight_tcl: 0,
 };
 
 const formatMoney = (value: number) =>
@@ -72,18 +76,36 @@ export default function ReportsScreen({ navigation }: Props) {
       </View>
 
       <View style={styles.hero}>
-        <Text style={styles.heroLabel}>NET PROFIT</Text>
-        <Text style={styles.heroValue}>{formatMoney(report.profit)}</Text>
+        <Text style={styles.heroLabel}>NET COLLECTED</Text>
+        <Text style={styles.heroValue}>
+          {formatMoney(report.net_collected)}
+        </Text>
         <Text style={styles.heroSubtext}>
-          Selling revenue minus cost of goods sold
+          Actual money received from today's sales, excluding change
         </Text>
       </View>
 
       <View style={styles.grid}>
         <Metric
+          label="Net profit"
+          value={formatMoney(report.profit)}
+          icon="chart-line"
+          valueColor={report.profit < 0 ? "#c0392b" : undefined}
+        />
+        <Metric
           label="Revenue"
           value={formatMoney(report.revenue)}
           icon="cash-register"
+        />
+        <Metric
+          label="Discount given"
+          value={formatMoney(report.discount_total)}
+          icon="sale-outline"
+        />
+        <Metric
+          label="Credit outstanding"
+          value={formatMoney(report.credit_outstanding)}
+          icon="account-clock-outline"
         />
         <Metric
           label="COGS"
@@ -94,11 +116,14 @@ export default function ReportsScreen({ navigation }: Props) {
           label="Transactions"
           value={report.transaction_count.toLocaleString()}
           icon="receipt-text-outline"
+          onPress={() => navigation.navigate("Transactions")}
         />
         <Metric
           label="Quantity sold"
-          value={report.item_count.toLocaleString()}
+          value={`${report.total_items.toLocaleString()} items`}
+          secondaryValue={`${report.total_weight_tcl.toFixed(2)} tcl`}
           icon="scale-balance"
+          onPress={() => navigation.navigate("QuantitySold")}
         />
       </View>
 
@@ -119,18 +144,42 @@ export default function ReportsScreen({ navigation }: Props) {
 function Metric({
   label,
   value,
+  secondaryValue,
   icon,
+  valueColor,
+  onPress,
 }: {
   label: string;
   value: string;
+  secondaryValue?: string;
   icon: keyof typeof MaterialCommunityIcons.glyphMap;
+  valueColor?: string;
+  onPress?: () => void;
 }) {
-  return (
-    <View style={styles.metric}>
+  const content = (
+    <View style={[styles.metric, onPress && styles.metricInsidePressable]}>
       <MaterialCommunityIcons name={icon} size={20} color="#e77945" />
       <Text style={styles.metricLabel}>{label}</Text>
-      <Text style={styles.metricValue}>{value}</Text>
+      <Text style={[styles.metricValue, valueColor && { color: valueColor }]}>
+        {value}
+      </Text>
+      {secondaryValue && (
+        <Text style={styles.metricSecondaryValue}>{secondaryValue}</Text>
+      )}
     </View>
+  );
+
+  return onPress ? (
+    <Pressable
+      style={({ pressed }) => [
+        styles.metricPressable,
+        pressed && styles.pressed,
+      ]}
+      onPress={onPress}>
+      {content}
+    </Pressable>
+  ) : (
+    content
   );
 }
 
@@ -184,6 +233,9 @@ const styles = StyleSheet.create({
     borderColor: "#e4ebe6",
     padding: 14,
   },
+  metricPressable: { width: "48%", borderRadius: 12 },
+  metricInsidePressable: { width: "100%" },
+  pressed: { opacity: 0.72 },
   metricLabel: {
     color: "#71837a",
     fontSize: 12,
@@ -195,6 +247,12 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: "900",
     marginTop: 6,
+  },
+  metricSecondaryValue: {
+    color: "#60736a",
+    fontSize: 13,
+    fontWeight: "800",
+    marginTop: 5,
   },
   note: {
     flexDirection: "row",

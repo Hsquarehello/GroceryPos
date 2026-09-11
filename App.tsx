@@ -10,6 +10,8 @@ import ScannerScreen from "./src/screens/ScannerScreen";
 import CartScreen from "./src/screens/CartScreen";
 import ReportsScreen from "./src/screens/ReportsScreen";
 import CustomersScreen from "./src/screens/CustomersScreen";
+import TransactionsScreen from "./src/screens/TransactionsScreen";
+import QuantitySoldScreen from "./src/screens/QuantitySoldScreen";
 
 export type RootStackParamList = {
   Home: undefined;
@@ -18,6 +20,8 @@ export type RootStackParamList = {
   Scanner: { mode?: "cart" | "product" } | undefined;
   Cart: undefined;
   Reports: undefined;
+  Transactions: undefined;
+  QuantitySold: undefined;
   Customers: undefined;
 };
 
@@ -75,6 +79,16 @@ export default function App() {
           name="Reports"
           component={ReportsScreen}
           options={{ title: "Daily report" }}
+        />
+        <Stack.Screen
+          name="Transactions"
+          component={TransactionsScreen}
+          options={{ title: "Transactions" }}
+        />
+        <Stack.Screen
+          name="QuantitySold"
+          component={QuantitySoldScreen}
+          options={{ title: "Quantity sold" }}
         />
         <Stack.Screen
           name="Customers"

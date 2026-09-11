@@ -2,14 +2,22 @@ import { create } from "zustand";
 import { CartItem, Product } from "../types";
 
 export function getDefaultSaleQuantity(product: Product) {
+  if (product.selling_unit === "viss") {
+    return 0.1;
+  }
   if (product.selling_unit === "kg") return 0.1;
   if (product.selling_unit === "g") return 100;
+  if (product.selling_unit === "tcl") return 1;
   return 1;
 }
 
 export function getSaleQuantityStep(product: Product) {
+  if (product.selling_unit === "viss") {
+    return 0.1;
+  }
   if (product.selling_unit === "kg") return 0.1;
   if (product.selling_unit === "g") return 50;
+  if (product.selling_unit === "tcl") return 1;
   return 1;
 }
 

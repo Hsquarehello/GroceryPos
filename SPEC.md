@@ -137,6 +137,8 @@ Credit payments must be between zero and the net sale total. A customer is requi
 The daily report displays local-calendar-day totals for:
 
 - Gross sale revenue.
+- Net collected cash, excluding change returned to customers.
+- Credit outstanding created by today's credit and split-payment sales.
 - Cost of goods sold (COGS).
 - Net profit.
 - Transaction count.

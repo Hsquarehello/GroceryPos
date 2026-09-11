@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import {
   Alert,
+  FlatList,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -29,8 +30,10 @@ export default function CartScreen({ navigation }: Props) {
   const { items, addItem, decreaseItem, removeItem, clear, setQuantity } =
     useCartStore();
   const [cash, setCash] = useState("");
-  const [discount, setDiscount] = useState(""); // Discount state
+  const [discount, setDiscount] = useState("");
   const [saleNote, setSaleNote] = useState("");
+  const [draftDiscount, setDraftDiscount] = useState("");
+  const [draftSaleNote, setDraftSaleNote] = useState("");
   const [debtNote, setDebtNote] = useState("");
   const [checkingOut, setCheckingOut] = useState(false);
   const [paymentType, setPaymentType] = useState<"CASH" | "CREDIT">("CASH");
@@ -40,8 +43,10 @@ export default function CartScreen({ navigation }: Props) {
   );
   const [showCustomers, setShowCustomers] = useState(false);
   const [showNewCustomer, setShowNewCustomer] = useState(false);
+  const [showMoreOptions, setShowMoreOptions] = useState(false);
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
+  const [customerSearch, setCustomerSearch] = useState("");
 
   const loadCustomers = async () => setCustomers(await getCustomers());
 
@@ -62,6 +67,23 @@ export default function CartScreen({ navigation }: Props) {
   const selectedCustomer = customers.find(
     (customer) => customer.id === selectedCustomerId,
   );
+  const filteredCustomers = customers.filter((customer) =>
+    customer.name
+      .toLocaleLowerCase()
+      .includes(customerSearch.trim().toLocaleLowerCase()),
+  );
+
+  const openMoreOptions = () => {
+    setDraftDiscount(discount);
+    setDraftSaleNote(saleNote);
+    setShowMoreOptions(true);
+  };
+
+  const applyMoreOptions = () => {
+    setDiscount(draftDiscount);
+    setSaleNote(draftSaleNote);
+    setShowMoreOptions(false);
+  };
 
   const checkout = async () => {
     if (!items.length) return;
@@ -156,32 +178,30 @@ export default function CartScreen({ navigation }: Props) {
             {/* Subtotal (မူလစုစုပေါင်း) */}
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>Subtotal</Text>
-              <Text style={styles.subtotalText}>
-                {subtotal.toLocaleString()} MMK
-              </Text>
+              <View style={styles.subtotalActions}>
+                <Text style={styles.subtotalText}>
+                  {subtotal.toLocaleString()} MMK
+                </Text>
+                <Pressable
+                  style={styles.moreOptionsButton}
+                  onPress={openMoreOptions}>
+                  <MaterialCommunityIcons
+                    name="tune-variant"
+                    size={16}
+                    color="#173f35"
+                  />
+                  <Text style={styles.moreOptionsText}>More options</Text>
+                </Pressable>
+              </View>
             </View>
 
-            {/* Discount Input Field */}
-            <Text style={styles.cashLabel}>Discount (MMK)</Text>
-            <TextInput
-              value={discount}
-              onChangeText={setDiscount}
-              style={styles.cashInput}
-              keyboardType="decimal-pad"
-              placeholder="Enter discount amount"
-              placeholderTextColor="#9aaa9f"
-            />
-
-            <Text style={styles.cashLabel}>Sale note (optional)</Text>
-            <TextInput
-              value={saleNote}
-              onChangeText={setSaleNote}
-              style={[styles.cashInput, styles.noteInput]}
-              multiline
-              numberOfLines={2}
-              placeholder="e.g. Broken product - discount applied"
-              placeholderTextColor="#9aaa9f"
-            />
+            {(discount || saleNote) && (
+              <Text style={styles.optionsApplied}>
+                {discount ? `Discount: ${discount} MMK` : ""}
+                {discount && saleNote ? "  |  " : ""}
+                {saleNote ? "Sale note added" : ""}
+              </Text>
+            )}
 
             {/* Net Total (Discount နှုတ်ပြီး နောက်ဆုံးကျသင့်ငွေ) */}
             <View style={[styles.totalRow, { marginTop: 8 }]}>
@@ -247,6 +267,7 @@ export default function CartScreen({ navigation }: Props) {
                 <Pressable
                   style={styles.customerPicker}
                   onPress={() => {
+                    setCustomerSearch("");
                     void loadCustomers();
                     setShowCustomers(true);
                   }}>
@@ -310,6 +331,52 @@ export default function CartScreen({ navigation }: Props) {
         )}
 
         <Modal
+          visible={showMoreOptions}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setShowMoreOptions(false)}>
+          <KeyboardAvoidingView
+            style={styles.bottomSheetOverlay}
+            behavior={Platform.OS === "ios" ? "padding" : undefined}>
+            <View style={styles.moreOptionsSheet}>
+              <View style={styles.sheetHandle} />
+              <View style={styles.sheetHeader}>
+                <Text style={styles.modalTitle}>More options</Text>
+                <Pressable onPress={() => setShowMoreOptions(false)}>
+                  <MaterialCommunityIcons
+                    name="close"
+                    size={22}
+                    color="#60736a"
+                  />
+                </Pressable>
+              </View>
+              <Text style={styles.cashLabel}>Discount (MMK)</Text>
+              <TextInput
+                value={draftDiscount}
+                onChangeText={setDraftDiscount}
+                style={styles.cashInput}
+                keyboardType="decimal-pad"
+                placeholder="Enter discount amount"
+                placeholderTextColor="#9aaa9f"
+              />
+              <Text style={styles.cashLabel}>Sale note (optional)</Text>
+              <TextInput
+                value={draftSaleNote}
+                onChangeText={setDraftSaleNote}
+                style={[styles.cashInput, styles.noteInput]}
+                multiline
+                numberOfLines={3}
+                placeholder="e.g. Broken product - discount applied"
+                placeholderTextColor="#9aaa9f"
+              />
+              <Pressable style={styles.applyButton} onPress={applyMoreOptions}>
+                <Text style={styles.newCustomerText}>Apply</Text>
+              </Pressable>
+            </View>
+          </KeyboardAvoidingView>
+        </Modal>
+
+        <Modal
           visible={showCustomers}
           transparent
           animationType="fade"
@@ -317,10 +384,41 @@ export default function CartScreen({ navigation }: Props) {
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <Text style={styles.modalTitle}>Select customer</Text>
-              <ScrollView style={styles.customerList}>
-                {customers.map((customer) => (
+              <View style={styles.customerSearchBox}>
+                <MaterialCommunityIcons
+                  name="magnify"
+                  size={20}
+                  color="#71837a"
+                />
+                <TextInput
+                  value={customerSearch}
+                  onChangeText={setCustomerSearch}
+                  style={styles.customerSearchInput}
+                  placeholder="Search by customer name"
+                  placeholderTextColor="#9aaa9f"
+                  autoCapitalize="none"
+                  returnKeyType="search"
+                />
+                {!!customerSearch && (
                   <Pressable
-                    key={customer.id}
+                    style={styles.clearCustomerSearch}
+                    onPress={() => setCustomerSearch("")}
+                    accessibilityLabel="Clear customer search">
+                    <MaterialCommunityIcons
+                      name="close-circle"
+                      size={19}
+                      color="#9aaa9f"
+                    />
+                  </Pressable>
+                )}
+              </View>
+              <FlatList
+                data={filteredCustomers}
+                keyExtractor={(customer) => String(customer.id)}
+                style={styles.customerList}
+                keyboardShouldPersistTaps="handled"
+                renderItem={({ item: customer }) => (
+                  <Pressable
                     style={styles.customerRow}
                     onPress={() => {
                       setSelectedCustomerId(customer.id!);
@@ -333,8 +431,11 @@ export default function CartScreen({ navigation }: Props) {
                       </Text>
                     </View>
                   </Pressable>
-                ))}
-              </ScrollView>
+                )}
+                ListEmptyComponent={
+                  <Text style={styles.noCustomerFound}>No customer found</Text>
+                }
+              />
               <Pressable
                 style={styles.newCustomerButton}
                 onPress={() => {
@@ -456,6 +557,24 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
+  subtotalActions: { alignItems: "flex-end", gap: 6 },
+  moreOptionsButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    borderColor: "#cbd9d2",
+    borderWidth: 1,
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+  },
+  moreOptionsText: { color: "#173f35", fontSize: 11, fontWeight: "800" },
+  optionsApplied: {
+    color: "#60736a",
+    fontSize: 12,
+    marginTop: 8,
+    textAlign: "right",
+  },
   totalLabel: { color: "#60736a", fontSize: 15, fontWeight: "700" },
   subtotalText: { color: "#60736a", fontSize: 16, fontWeight: "800" },
   total: { color: "#173f35", fontSize: 22, fontWeight: "900" },
@@ -543,6 +662,31 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 20,
   },
+  bottomSheetOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(23, 63, 53, 0.35)",
+    justifyContent: "flex-end",
+  },
+  moreOptionsSheet: {
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 18,
+    borderTopRightRadius: 18,
+    padding: 20,
+    paddingBottom: 28,
+  },
+  sheetHandle: {
+    alignSelf: "center",
+    backgroundColor: "#cbd9d2",
+    borderRadius: 3,
+    height: 5,
+    marginBottom: 14,
+    width: 42,
+  },
+  sheetHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
   modalContent: {
     backgroundColor: "#fff",
     borderRadius: 14,
@@ -556,6 +700,30 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   customerList: { maxHeight: 260 },
+  customerSearchBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f5f7f3",
+    borderColor: "#dce6e0",
+    borderWidth: 1,
+    borderRadius: 9,
+    paddingHorizontal: 11,
+    marginBottom: 10,
+  },
+  customerSearchInput: {
+    flex: 1,
+    color: "#173f35",
+    fontSize: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+  },
+  clearCustomerSearch: { padding: 4 },
+  noCustomerFound: {
+    color: "#71837a",
+    textAlign: "center",
+    paddingVertical: 28,
+    fontSize: 13,
+  },
   customerRow: {
     paddingVertical: 12,
     borderBottomWidth: 1,
@@ -569,6 +737,13 @@ const styles = StyleSheet.create({
     padding: 12,
     alignItems: "center",
     marginTop: 14,
+  },
+  applyButton: {
+    backgroundColor: "#e77945",
+    borderRadius: 8,
+    padding: 14,
+    alignItems: "center",
+    marginTop: 18,
   },
   newCustomerText: { color: "#fff", fontWeight: "800" },
   closeButton: { alignItems: "center", padding: 12, marginTop: 4 },
