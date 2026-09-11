@@ -27,7 +27,8 @@
       "predictiveBackGestureEnabled": false,
       "permissions": [
         "android.permission.CAMERA",
-        "android.permission.CAMERA"
+        "android.permission.CAMERA",
+        "REQUEST_INSTALL_PACKAGES"
       ],
       "package": "com.heinhtet_18.GroceryPOS"
     },

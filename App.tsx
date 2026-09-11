@@ -1,13 +1,11 @@
 import React, { useEffect } from "react";
-import { Alert, StyleSheet, Text, Platform } from "react-native";
+import { StyleSheet, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import * as Application from "expo-application";
-import * as FileSystem from "expo-file-system/legacy";
-import * as IntentLauncher from "expo-intent-launcher";
 
 import { initDatabase } from "./src/database/db";
+import checkVersion from "./src/utils/checkVersion";
 import HomeScreen from "./src/screens/HomeScreen";
 import AddProductScreen from "./src/screens/AddProductScreen";
 import ScannerScreen from "./src/screens/ScannerScreen";
@@ -31,32 +29,6 @@ export type RootStackParamList = {
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-// 1. Permanent Raw URL (Commit Hash /3dfb37... ကို ဖြုတ်ထားသည်)
-const VERSION_MANIFEST_URL =
-  "https://gist.githubusercontent.com/Hsquarehello/19417c2c80a03040bde0e91b37cbfb9a/raw/version.json";
-
-type VersionManifest = {
-  latestVersion: string;
-  apkUrl: string;
-  forceUpdate: boolean;
-};
-
-function isNewerVersion(latestVersion: string, currentVersion: string) {
-  const latestParts = latestVersion.split(".").map(Number);
-  const currentParts = currentVersion.split(".").map(Number);
-
-  for (let index = 0; index < 3; index += 1) {
-    const latestPart = latestParts[index] || 0;
-    const currentPart = currentParts[index] || 0;
-
-    if (latestPart !== currentPart) {
-      return latestPart > currentPart;
-    }
-  }
-
-  return false;
-}
-
 export default function App() {
   const [ready, setReady] = React.useState(false);
 
@@ -64,81 +36,8 @@ export default function App() {
     initDatabase();
     setReady(true);
 
-    checkUpdate();
+    checkVersion();
   }, []);
-
-  const checkUpdate = async () => {
-    try {
-      // 2. Development Mode အတွက် Fallback version ("1.0.0") ထည့်ပေးထားသည်
-      const currentVersion = Application.nativeApplicationVersion || "1.0.0";
-
-      const response = await fetch(`${VERSION_MANIFEST_URL}?t=${Date.now()}`); // Cache ခေတ္တမမှတ်မိစေရန် timestamp ထည့်ထားသည်
-      if (!response.ok) {
-        throw new Error("Could not check for updates");
-      }
-
-      const manifest: VersionManifest = await response.json();
-
-      console.log(
-        `[Update Check] Current: ${currentVersion} | Latest: ${manifest.latestVersion}`,
-      );
-
-      if (
-        !manifest.latestVersion ||
-        !manifest.apkUrl ||
-        !isNewerVersion(manifest.latestVersion, currentVersion)
-      ) {
-        return;
-      }
-
-      Alert.alert(
-        `GroceryPOS ${manifest.latestVersion} is available`,
-        "Update now to get the latest features and fixes.",
-        manifest.forceUpdate
-          ? [
-              {
-                text: "Update now",
-                onPress: () => handleDownloadAndInstall(manifest.apkUrl),
-              },
-            ]
-          : [
-              { text: "Later", style: "cancel" },
-              {
-                text: "Update now",
-                onPress: () => handleDownloadAndInstall(manifest.apkUrl),
-              },
-            ],
-      );
-    } catch (error) {
-      // 3. Debug လုပ်ရလွယ်ကူစေရန် console log ပြထားသည်
-      console.log("[In-App Update Error]:", error);
-    }
-  };
-
-  // 4. Browser မဖွင့်ဘဲ APK ကို တိုက်ရိုက် ဒေါင်းလုဒ်ဆွဲပြီး Install လုပ်ပေးမည့် Function
-  const handleDownloadAndInstall = async (apkUrl: string) => {
-    if (Platform.OS !== "android") return;
-
-    try {
-      Alert.alert(
-        "Downloading...",
-        "APK ကို ဒေါင်းလုဒ်ဆွဲနေပါသည်။ ခေတ္တစောင့်ဆိုင်းပေးပါ...",
-      );
-
-      const fileUri = FileSystem.documentDirectory + "update.apk";
-      const downloadRes = await FileSystem.downloadAsync(apkUrl, fileUri);
-
-      const contentUri = await FileSystem.getContentUriAsync(downloadRes.uri);
-
-      await IntentLauncher.startActivityAsync("android.intent.action.VIEW", {
-        data: contentUri,
-        flags: 1, // Intent.FLAG_GRANT_READ_URI_PERMISSION
-        type: "application/vnd.android.package-archive",
-      });
-    } catch (error: any) {
-      Alert.alert("Install Failed", error.message);
-    }
-  };
 
   if (!ready) {
     return (
