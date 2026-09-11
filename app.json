@@ -13,10 +13,12 @@
     },
     "ios": {
       "supportsTablet": true,
-      "backgroundColor": "#FFF7D1"
+      "backgroundColor": "#FFF7D1",
+      "icon": "./assets/icon.png"
     },
     "android": {
       "backgroundColor": "#FFF7D1",
+      "icon": "./assets/icon.png",
       "adaptiveIcon": {
         "backgroundColor": "#FFF7D1",
         "foregroundImage": "./assets/icon.png"
@@ -26,7 +28,7 @@
       "package": "com.heinhtet_18.GroceryPOS"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/icon.png"
     },
     "plugins": [
       "expo-sqlite",
