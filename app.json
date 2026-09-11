@@ -2,7 +2,7 @@
   "expo": {
     "name": "GroceryPOS",
     "slug": "GroceryPOS",
-    "version": "1.0.1",
+    "version": "1.0.3",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -19,18 +19,21 @@
     "android": {
       "backgroundColor": "#FFF7D1",
       "icon": "./assets/icon.png",
-      "versionCode": 1,
+      "versionCode": 3,
       "adaptiveIcon": {
         "backgroundColor": "#FFF7D1",
         "foregroundImage": "./assets/icon.png"
       },
       "predictiveBackGestureEnabled": false,
-      "permissions": ["android.permission.CAMERA"],
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.CAMERA"
+      ],
       "package": "com.heinhtet_18.GroceryPOS"
     },
-    "web": {
-      "favicon": "./assets/icon.png"
-    },
+    // "web": {
+    //   "favicon": "./assets/icon.png"
+    // },
     "plugins": [
       "expo-sqlite",
       [
@@ -56,6 +59,13 @@
       "eas": {
         "projectId": "e585018c-5dbb-4903-8077-19c2d8796fe8"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/e585018c-5dbb-4903-8077-19c2d8796fe8",
+      "checkAutomatically": "ON_LOAD"
     }
   }
 }
