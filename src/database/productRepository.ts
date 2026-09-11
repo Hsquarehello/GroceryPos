@@ -320,18 +320,26 @@ export interface QuantitySoldItem {
   revenue: number;
 }
 
-export async function getDailyReport(date = new Date()): Promise<DailyReport> {
-  const day = [date.getFullYear(), date.getMonth() + 1, date.getDate()]
+function formatLocalDate(date: Date) {
+  return [date.getFullYear(), date.getMonth() + 1, date.getDate()]
     .map((part, index) =>
       index === 0 ? String(part) : String(part).padStart(2, "0"),
     )
     .join("-");
+}
+
+export async function getDateRangeReport(
+  startDate = new Date(),
+  endDate = startDate,
+): Promise<DailyReport> {
+  const start = formatLocalDate(startDate);
+  const end = formatLocalDate(endDate);
   const row = await db.getFirstAsync<DailyReport>(
     `SELECT
-       COALESCE((SELECT SUM(total_amount) FROM sales WHERE date(created_at, 'localtime') = ?), 0) AS revenue,
-       COALESCE((SELECT SUM(discount_amount) FROM sales WHERE date(created_at, 'localtime') = ?), 0) AS discount_total,
-       COALESCE((SELECT SUM(CASE WHEN payment_type = 'CASH' THEN total_amount ELSE cash_received END) FROM sales WHERE date(created_at, 'localtime') = ?), 0) AS net_collected,
-       COALESCE((SELECT SUM(CASE WHEN payment_type = 'CREDIT' THEN total_amount - cash_received ELSE 0 END) FROM sales WHERE date(created_at, 'localtime') = ?), 0) AS credit_outstanding,
+       COALESCE((SELECT SUM(total_amount) FROM sales WHERE date(created_at, 'localtime') BETWEEN ? AND ?), 0) AS revenue,
+       COALESCE((SELECT SUM(discount_amount) FROM sales WHERE date(created_at, 'localtime') BETWEEN ? AND ?), 0) AS discount_total,
+       COALESCE((SELECT SUM(CASE WHEN payment_type = 'CASH' THEN total_amount ELSE cash_received END) FROM sales WHERE date(created_at, 'localtime') BETWEEN ? AND ?), 0) AS net_collected,
+       COALESCE((SELECT SUM(CASE WHEN payment_type = 'CREDIT' THEN total_amount - cash_received ELSE 0 END) FROM sales WHERE date(created_at, 'localtime') BETWEEN ? AND ?), 0) AS credit_outstanding,
        COALESCE(SUM(si.quantity * COALESCE(NULLIF(si.unit_cost, 0), p.cost_price)), 0) AS cogs,
        COALESCE(SUM(si.quantity * (si.unit_price - COALESCE(NULLIF(si.unit_cost, 0), p.cost_price))), 0) AS profit,
        COUNT(DISTINCT s.id) AS transaction_count,
@@ -344,8 +352,8 @@ export async function getDailyReport(date = new Date()): Promise<DailyReport> {
      FROM sales s
      LEFT JOIN sale_items si ON si.sale_id = s.id
      LEFT JOIN products p ON p.id = si.product_id
-     WHERE date(s.created_at, 'localtime') = ?`,
-    [day, day, day, day, day],
+    WHERE date(s.created_at, 'localtime') BETWEEN ? AND ?`,
+    [start, end, start, end, start, end, start, end, start, end],
   );
 
   return {
@@ -359,6 +367,10 @@ export async function getDailyReport(date = new Date()): Promise<DailyReport> {
     total_items: Number(row?.total_items ?? 0),
     total_weight_tcl: Number(row?.total_weight_tcl ?? 0),
   };
+}
+
+export async function getDailyReport(date = new Date()): Promise<DailyReport> {
+  return getDateRangeReport(date);
 }
 
 export async function getDailyTransactions(

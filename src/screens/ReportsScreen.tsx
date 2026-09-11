@@ -8,11 +8,14 @@ import {
   Text,
   View,
 } from "react-native";
+import DateTimePicker, {
+  DateTimePickerEvent,
+} from "@react-native-community/datetimepicker";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { RootStackParamList } from "../../App";
-import { DailyReport, getDailyReport } from "../database/productRepository";
+import { DailyReport, getDateRangeReport } from "../database/productRepository";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Reports">;
 
@@ -31,20 +34,80 @@ const emptyReport: DailyReport = {
 const formatMoney = (value: number) =>
   `${Math.round(value).toLocaleString()} MMK`;
 
+const formatDate = (date: Date) =>
+  date.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+
+type Preset = "today" | "yesterday" | "week" | "month";
+
+function getPresetRange(preset: Preset, today = new Date()) {
+  const current = new Date(today);
+  current.setHours(0, 0, 0, 0);
+
+  if (preset === "today") return { start: current, end: current };
+
+  if (preset === "yesterday") {
+    const yesterday = new Date(current);
+    yesterday.setDate(yesterday.getDate() - 1);
+    return { start: yesterday, end: yesterday };
+  }
+
+  if (preset === "week") {
+    const start = new Date(current);
+    const daysSinceMonday = (start.getDay() + 6) % 7;
+    start.setDate(start.getDate() - daysSinceMonday);
+    return { start, end: current };
+  }
+
+  return {
+    start: new Date(current.getFullYear(), current.getMonth(), 1),
+    end: current,
+  };
+}
+
 export default function ReportsScreen({ navigation }: Props) {
   const [report, setReport] = useState<DailyReport>(emptyReport);
   const [refreshing, setRefreshing] = useState(false);
+  const [startDate, setStartDate] = useState(() => new Date());
+  const [endDate, setEndDate] = useState(() => new Date());
+  const [selectedPreset, setSelectedPreset] = useState<Preset | null>("today");
+  const [pickerTarget, setPickerTarget] = useState<"start" | "end" | null>(
+    null,
+  );
 
   const loadReport = useCallback(async () => {
     setRefreshing(true);
     try {
-      setReport(await getDailyReport());
+      setReport(await getDateRangeReport(startDate, endDate));
     } catch {
-      Alert.alert("Error", "Could not load today's report.");
+      Alert.alert("Error", "Could not load the selected report.");
     } finally {
       setRefreshing(false);
     }
-  }, []);
+  }, [endDate, startDate]);
+
+  const handleDateChange = useCallback(
+    (event: DateTimePickerEvent, selectedDate?: Date) => {
+      if (event.type === "dismissed" || !selectedDate) {
+        setPickerTarget(null);
+        return;
+      }
+
+      if (pickerTarget === "start") {
+        setStartDate(selectedDate);
+        if (selectedDate > endDate) setEndDate(selectedDate);
+      } else {
+        setEndDate(selectedDate);
+        if (selectedDate < startDate) setStartDate(selectedDate);
+      }
+      setSelectedPreset(null);
+      setPickerTarget(null);
+    },
+    [endDate, pickerTarget, startDate],
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -65,8 +128,8 @@ export default function ReportsScreen({ navigation }: Props) {
       }>
       <View style={styles.headerRow}>
         <View>
-          <Text style={styles.eyebrow}>TODAY</Text>
-          <Text style={styles.heading}>Daily report</Text>
+          <Text style={styles.eyebrow}>REPORTS</Text>
+          <Text style={styles.heading}>Sales report</Text>
         </View>
         <Pressable
           style={styles.backButton}
@@ -75,13 +138,69 @@ export default function ReportsScreen({ navigation }: Props) {
         </Pressable>
       </View>
 
+      <View style={styles.presetRow}>
+        {(
+          [
+            ["today", "Today"],
+            ["yesterday", "Yesterday"],
+            ["week", "This week"],
+            ["month", "This month"],
+          ] as const
+        ).map(([preset, label]) => (
+          <Pressable
+            key={preset}
+            style={[
+              styles.presetButton,
+              selectedPreset === preset && styles.presetButtonActive,
+            ]}
+            onPress={() => {
+              const range = getPresetRange(preset);
+              setStartDate(range.start);
+              setEndDate(range.end);
+              setSelectedPreset(preset);
+            }}>
+            <Text
+              style={[
+                styles.presetText,
+                selectedPreset === preset && styles.presetTextActive,
+              ]}>
+              {label}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+
+      <View style={styles.dateRange}>
+        <DateButton
+          label="FROM"
+          date={startDate}
+          onPress={() => setPickerTarget("start")}
+        />
+        <MaterialCommunityIcons name="arrow-right" size={18} color="#71837a" />
+        <DateButton
+          label="TO"
+          date={endDate}
+          onPress={() => setPickerTarget("end")}
+        />
+      </View>
+
+      {pickerTarget && (
+        <DateTimePicker
+          value={pickerTarget === "start" ? startDate : endDate}
+          mode="date"
+          display="default"
+          onChange={handleDateChange}
+          maximumDate={new Date()}
+        />
+      )}
+
       <View style={styles.hero}>
         <Text style={styles.heroLabel}>NET COLLECTED</Text>
         <Text style={styles.heroValue}>
           {formatMoney(report.net_collected)}
         </Text>
         <Text style={styles.heroSubtext}>
-          Actual money received from today's sales, excluding change
+          Actual money received from selected sales, excluding change
         </Text>
       </View>
 
@@ -138,6 +257,26 @@ export default function ReportsScreen({ navigation }: Props) {
         </Text>
       </View>
     </ScrollView>
+  );
+}
+
+function DateButton({
+  label,
+  date,
+  onPress,
+}: {
+  label: string;
+  date: Date;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      style={({ pressed }) => [styles.dateButton, pressed && styles.pressed]}
+      onPress={onPress}>
+      <Text style={styles.dateLabel}>{label}</Text>
+      <Text style={styles.dateValue}>{formatDate(date)}</Text>
+      <MaterialCommunityIcons name="calendar-blank" size={18} color="#e77945" />
+    </Pressable>
   );
 }
 
@@ -223,6 +362,59 @@ const styles = StyleSheet.create({
   },
   heroValue: { color: "#fff", fontSize: 32, fontWeight: "900", marginTop: 8 },
   heroSubtext: { color: "#d6e5dc", fontSize: 12, marginTop: 8 },
+  dateRange: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 14,
+  },
+  presetRow: {
+    flexDirection: "row",
+    gap: 7,
+    marginBottom: 10,
+  },
+  presetButton: {
+    flex: 1,
+    minHeight: 38,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#eef4f1",
+    borderRadius: 9,
+    paddingHorizontal: 5,
+  },
+  presetButtonActive: {
+    backgroundColor: "#173f35",
+  },
+  presetText: {
+    color: "#60736a",
+    fontSize: 11,
+    fontWeight: "800",
+  },
+  presetTextActive: {
+    color: "#fff",
+  },
+  dateButton: {
+    flex: 1,
+    minHeight: 64,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#dce6e0",
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+  },
+  dateLabel: {
+    color: "#71837a",
+    fontSize: 10,
+    fontWeight: "800",
+    letterSpacing: 1.2,
+  },
+  dateValue: {
+    color: "#173f35",
+    fontSize: 14,
+    fontWeight: "800",
+    marginTop: 5,
+  },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   metric: {
     width: "48%",
