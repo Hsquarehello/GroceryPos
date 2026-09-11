@@ -1,8 +1,9 @@
 import React, { useEffect } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Alert, Linking, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import * as Application from "expo-application";
 import { initDatabase } from "./src/database/db";
 import HomeScreen from "./src/screens/HomeScreen";
 import AddProductScreen from "./src/screens/AddProductScreen";
@@ -27,12 +28,82 @@ export type RootStackParamList = {
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
+const VERSION_MANIFEST_URL =
+  "https://gist.githubusercontent.com/Hsquarehello/19417c2c80a03040bde0e91b37cbfb9a/raw/3dfb37fc08b89938c7a873fcb266ce4cd4bcc467/version.json";
+
+type VersionManifest = {
+  latestVersion: string;
+  apkUrl: string;
+  forceUpdate: boolean;
+};
+
+function isNewerVersion(latestVersion: string, currentVersion: string) {
+  const latestParts = latestVersion.split(".").map(Number);
+  const currentParts = currentVersion.split(".").map(Number);
+
+  for (let index = 0; index < 3; index += 1) {
+    const latestPart = latestParts[index] || 0;
+    const currentPart = currentParts[index] || 0;
+
+    if (latestPart !== currentPart) {
+      return latestPart > currentPart;
+    }
+  }
+
+  return false;
+}
+
 export default function App() {
   const [ready, setReady] = React.useState(false);
 
   useEffect(() => {
     initDatabase();
     setReady(true);
+
+    if (!Application.nativeApplicationVersion) {
+      return;
+    }
+
+    fetch(VERSION_MANIFEST_URL)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Could not check for updates");
+        }
+
+        return response.json() as Promise<VersionManifest>;
+      })
+      .then((manifest) => {
+        if (
+          !manifest.latestVersion ||
+          !manifest.apkUrl ||
+          !isNewerVersion(
+            manifest.latestVersion,
+            Application.nativeApplicationVersion as string,
+          )
+        ) {
+          return;
+        }
+
+        Alert.alert(
+          `GroceryPOS ${manifest.latestVersion} is available`,
+          "Update now to get the latest features and fixes.",
+          manifest.forceUpdate
+            ? [
+                {
+                  text: "Update now",
+                  onPress: () => Linking.openURL(manifest.apkUrl),
+                },
+              ]
+            : [
+                { text: "Later", style: "cancel" },
+                {
+                  text: "Update now",
+                  onPress: () => Linking.openURL(manifest.apkUrl),
+                },
+              ],
+        );
+      })
+      .catch(() => {});
   }, []);
 
   if (!ready) {
