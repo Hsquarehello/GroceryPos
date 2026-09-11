@@ -101,7 +101,7 @@ export default function HomeScreen({ navigation }: Props) {
       {/* Header Row */}
       <View style={styles.headerRow}>
         <View>
-          <Text style={styles.eyebrow}>INVENTORY Test Update</Text>
+          <Text style={styles.eyebrow}>INVENTORY</Text>
           <Text style={styles.heading}>Your products</Text>
         </View>
         <View style={styles.headerActions}>

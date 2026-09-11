@@ -2,7 +2,7 @@
   "expo": {
     "name": "GroceryPOS",
     "slug": "GroceryPOS",
-    "version": "1.0.3",
+    "version": "1.0.5",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -19,7 +19,7 @@
     "android": {
       "backgroundColor": "#FFF7D1",
       "icon": "./assets/icon.png",
-      "versionCode": 3,
+      "versionCode": 5,
       "adaptiveIcon": {
         "backgroundColor": "#FFF7D1",
         "foregroundImage": "./assets/icon.png"
@@ -65,7 +65,7 @@
     },
     "updates": {
       "url": "https://u.expo.dev/e585018c-5dbb-4903-8077-19c2d8796fe8",
-      "checkAutomatically": "ON_LOAD"
+      "checkAutomatically": "NEVER"
     }
   }
 }
