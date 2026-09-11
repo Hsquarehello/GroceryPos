@@ -188,7 +188,7 @@ export default function CartScreen({ navigation }: Props) {
                   <MaterialCommunityIcons
                     name="tune-variant"
                     size={16}
-                    color="#173f35"
+                    color="#3a2818"
                   />
                   <Text style={styles.moreOptionsText}>More options</Text>
                 </Pressable>
@@ -277,7 +277,7 @@ export default function CartScreen({ navigation }: Props) {
                   <MaterialCommunityIcons
                     name="account-search-outline"
                     size={20}
-                    color="#60736a"
+                    color="#7a6a52"
                   />
                 </Pressable>
                 <Text style={styles.cashLabel}>Debt note (optional)</Text>
@@ -346,7 +346,7 @@ export default function CartScreen({ navigation }: Props) {
                   <MaterialCommunityIcons
                     name="close"
                     size={22}
-                    color="#60736a"
+                    color="#7a6a52"
                   />
                 </Pressable>
               </View>
@@ -514,7 +514,7 @@ export default function CartScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#f5f7f3" },
+  screen: { flex: 1, backgroundColor: "#fffaf0" },
   content: { padding: 20, paddingBottom: 20 },
   topline: {
     flexDirection: "row",
@@ -523,23 +523,23 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
   eyebrow: {
-    color: "#e77945",
+    color: "#f36f0a",
     fontSize: 11,
     fontWeight: "800",
     letterSpacing: 1.5,
   },
-  heading: { color: "#173f35", fontSize: 30, fontWeight: "800", marginTop: 4 },
+  heading: { color: "#3a2818", fontSize: 30, fontWeight: "800", marginTop: 4 },
   itemCount: { color: "#71837a", fontWeight: "700", paddingBottom: 3 },
   empty: { alignItems: "center", paddingTop: 80 },
   emptyTitle: {
-    color: "#173f35",
+    color: "#3a2818",
     fontSize: 19,
     fontWeight: "800",
     marginTop: 14,
   },
   emptyText: { color: "#71837a", marginTop: 6, textAlign: "center" },
   browse: {
-    backgroundColor: "#173f35",
+    backgroundColor: "#3a2818",
     paddingHorizontal: 17,
     paddingVertical: 13,
     borderRadius: 8,
@@ -548,7 +548,7 @@ const styles = StyleSheet.create({
   browseText: { color: "#fff", fontWeight: "800" },
   footer: {
     backgroundColor: "#fff",
-    borderTopColor: "#dce6e0",
+    borderTopColor: "#f0dfb6",
     borderTopWidth: 1,
     padding: 16,
   },
@@ -568,16 +568,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 5,
   },
-  moreOptionsText: { color: "#173f35", fontSize: 11, fontWeight: "800" },
+  moreOptionsText: { color: "#3a2818", fontSize: 11, fontWeight: "800" },
   optionsApplied: {
-    color: "#60736a",
+    color: "#7a6a52",
     fontSize: 12,
     marginTop: 8,
     textAlign: "right",
   },
-  totalLabel: { color: "#60736a", fontSize: 15, fontWeight: "700" },
-  subtotalText: { color: "#60736a", fontSize: 16, fontWeight: "800" },
-  total: { color: "#173f35", fontSize: 22, fontWeight: "900" },
+  totalLabel: { color: "#7a6a52", fontSize: 15, fontWeight: "700" },
+  subtotalText: { color: "#7a6a52", fontSize: 16, fontWeight: "800" },
+  total: { color: "#3a2818", fontSize: 22, fontWeight: "900" },
   cashLabel: {
     color: "#436157",
     fontSize: 11,
@@ -587,13 +587,13 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   cashInput: {
-    backgroundColor: "#f5f7f3",
-    borderColor: "#dce6e0",
+    backgroundColor: "#fffaf0",
+    borderColor: "#f0dfb6",
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    color: "#173f35",
+    color: "#3a2818",
     fontSize: 15,
   },
   noteInput: {
@@ -607,9 +607,9 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   changeLabel: { color: "#71837a", fontSize: 16, fontWeight: "700" },
-  change: { color: "#e77945", fontSize: 18, fontWeight: "800" },
+  change: { color: "#f36f0a", fontSize: 18, fontWeight: "800" },
   pay: {
-    backgroundColor: "#e77945",
+    backgroundColor: "#f36f0a",
     borderRadius: 8,
     padding: 14,
     alignItems: "center",
@@ -619,7 +619,7 @@ const styles = StyleSheet.create({
   payText: { color: "#fff", fontWeight: "800", fontSize: 15 },
   paymentToggle: {
     flexDirection: "row",
-    backgroundColor: "#eef4f1",
+    backgroundColor: "#fff1c2",
     borderRadius: 8,
     padding: 3,
     marginTop: 10,
@@ -630,41 +630,41 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 6,
   },
-  paymentOptionActive: { backgroundColor: "#173f35" },
-  paymentOptionText: { color: "#60736a", fontWeight: "800" },
+  paymentOptionActive: { backgroundColor: "#3a2818" },
+  paymentOptionText: { color: "#7a6a52", fontWeight: "800" },
   paymentOptionTextActive: { color: "#fff" },
   customerPicker: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#f5f7f3",
-    borderColor: "#dce6e0",
+    backgroundColor: "#fffaf0",
+    borderColor: "#f0dfb6",
     borderWidth: 1,
     borderRadius: 8,
     padding: 12,
     marginTop: 10,
   },
-  customerPickerText: { color: "#173f35", fontSize: 15, fontWeight: "700" },
+  customerPickerText: { color: "#3a2818", fontSize: 15, fontWeight: "700" },
   creditSummary: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#eef4f1",
+    backgroundColor: "#fff1c2",
     borderRadius: 8,
     padding: 10,
     marginTop: 8,
   },
-  creditSummaryLabel: { color: "#60736a", fontSize: 12, fontWeight: "800" },
+  creditSummaryLabel: { color: "#7a6a52", fontSize: 12, fontWeight: "800" },
   creditSummaryValue: { color: "#bd6337", fontSize: 13, fontWeight: "900" },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(23, 63, 53, 0.35)",
+    backgroundColor: "rgba(107, 72, 29, 0.35)",
     justifyContent: "center",
     padding: 20,
   },
   bottomSheetOverlay: {
     flex: 1,
-    backgroundColor: "rgba(23, 63, 53, 0.35)",
+    backgroundColor: "rgba(107, 72, 29, 0.35)",
     justifyContent: "flex-end",
   },
   moreOptionsSheet: {
@@ -694,7 +694,7 @@ const styles = StyleSheet.create({
     maxHeight: "80%",
   },
   modalTitle: {
-    color: "#173f35",
+    color: "#3a2818",
     fontSize: 20,
     fontWeight: "800",
     marginBottom: 12,
@@ -703,8 +703,8 @@ const styles = StyleSheet.create({
   customerSearchBox: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#f5f7f3",
-    borderColor: "#dce6e0",
+    backgroundColor: "#fffaf0",
+    borderColor: "#f0dfb6",
     borderWidth: 1,
     borderRadius: 9,
     paddingHorizontal: 11,
@@ -712,7 +712,7 @@ const styles = StyleSheet.create({
   },
   customerSearchInput: {
     flex: 1,
-    color: "#173f35",
+    color: "#3a2818",
     fontSize: 14,
     paddingVertical: 10,
     paddingHorizontal: 8,
@@ -727,19 +727,19 @@ const styles = StyleSheet.create({
   customerRow: {
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#eef4f1",
+    borderBottomColor: "#fff1c2",
   },
-  customerName: { color: "#173f35", fontSize: 15, fontWeight: "800" },
+  customerName: { color: "#3a2818", fontSize: 15, fontWeight: "800" },
   customerDebt: { color: "#71837a", fontSize: 12, marginTop: 3 },
   newCustomerButton: {
-    backgroundColor: "#e77945",
+    backgroundColor: "#f36f0a",
     borderRadius: 8,
     padding: 12,
     alignItems: "center",
     marginTop: 14,
   },
   applyButton: {
-    backgroundColor: "#e77945",
+    backgroundColor: "#f36f0a",
     borderRadius: 8,
     padding: 14,
     alignItems: "center",
@@ -747,5 +747,5 @@ const styles = StyleSheet.create({
   },
   newCustomerText: { color: "#fff", fontWeight: "800" },
   closeButton: { alignItems: "center", padding: 12, marginTop: 4 },
-  closeButtonText: { color: "#60736a", fontWeight: "800" },
+  closeButtonText: { color: "#7a6a52", fontWeight: "800" },
 });

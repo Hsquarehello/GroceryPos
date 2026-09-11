@@ -26,7 +26,7 @@ function ProductCard({
         <MaterialCommunityIcons
           name="package-variant-closed"
           size={24}
-          color="#e77945"
+          color="#f36f0a"
         />
       </View>
 
@@ -112,14 +112,14 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: "#e4ebe6",
+    borderColor: "#f1dfb8",
     alignItems: "center",
   },
   icon: {
     width: 46,
     height: 46,
     borderRadius: 10,
-    backgroundColor: "#fff0e9",
+    backgroundColor: "#fff0c2",
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
@@ -130,17 +130,17 @@ const styles = StyleSheet.create({
     paddingRight: 8,
   },
   name: {
-    color: "#173f35",
+    color: "#3a2818",
     fontSize: 15,
     fontWeight: "800",
   },
   meta: {
-    color: "#85958d",
+    color: "#9a896f",
     fontSize: 11,
     marginTop: 2,
   },
   unitLabel: {
-    color: "#e77945",
+    color: "#f36f0a",
     fontSize: 11,
     fontWeight: "700",
     marginTop: 3,
@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   price: {
-    color: "#e77945",
+    color: "#f36f0a",
     fontSize: 15,
     fontWeight: "800",
   },
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
     marginVertical: 2,
   },
   stockBadge: {
-    backgroundColor: "#eef4f1",
+    backgroundColor: "#fff1c2",
     paddingHorizontal: 7,
     paddingVertical: 2,
     borderRadius: 4,
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f3f4f6",
   },
   stockText: {
-    color: "#436157",
+    color: "#7a6442",
     fontSize: 10,
     fontWeight: "700",
   },
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    backgroundColor: "#e77945",
+    backgroundColor: "#f36f0a",
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 6,

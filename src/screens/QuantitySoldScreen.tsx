@@ -83,7 +83,7 @@ export default function QuantitySoldScreen({ navigation }: Props) {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={loadItems}
-            tintColor="#e77945"
+            tintColor="#f36f0a"
           />
         }
         ListHeaderComponent={
@@ -102,7 +102,7 @@ export default function QuantitySoldScreen({ navigation }: Props) {
                 <MaterialCommunityIcons
                   name="arrow-left"
                   size={19}
-                  color="#173f35"
+                  color="#3a2818"
                 />
               </Pressable>
             </View>
@@ -143,7 +143,7 @@ export default function QuantitySoldScreen({ navigation }: Props) {
                 <MaterialCommunityIcons
                   name="chevron-down"
                   size={18}
-                  color="#173f35"
+                  color="#3a2818"
                 />
               </Pressable>
             </View>
@@ -180,7 +180,7 @@ export default function QuantitySoldScreen({ navigation }: Props) {
                     : "scale-balance"
                 }
                 size={20}
-                color="#e77945"
+                color="#f36f0a"
               />
             </View>
             <View style={styles.productInfo}>
@@ -216,7 +216,7 @@ export default function QuantitySoldScreen({ navigation }: Props) {
                 <MaterialCommunityIcons
                   name="close"
                   size={21}
-                  color="#60736a"
+                  color="#7a6a52"
                 />
               </Pressable>
             </View>
@@ -283,7 +283,7 @@ export default function QuantitySoldScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#f5f7f3" },
+  screen: { flex: 1, backgroundColor: "#fffaf0" },
   content: { padding: 20, paddingBottom: 40, flexGrow: 1 },
   header: {
     flexDirection: "row",
@@ -292,16 +292,16 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
   eyebrow: {
-    color: "#e77945",
+    color: "#f36f0a",
     fontSize: 11,
     fontWeight: "800",
     letterSpacing: 1.5,
   },
-  heading: { color: "#173f35", fontSize: 30, fontWeight: "800", marginTop: 4 },
+  heading: { color: "#3a2818", fontSize: 30, fontWeight: "800", marginTop: 4 },
   subheading: { color: "#71837a", fontSize: 13, marginTop: 6 },
   filterControl: {
     flexDirection: "row",
-    backgroundColor: "#eef4f1",
+    backgroundColor: "#fff1c2",
     borderRadius: 9,
     padding: 3,
     marginBottom: 14,
@@ -312,8 +312,8 @@ const styles = StyleSheet.create({
     borderRadius: 7,
     paddingVertical: 9,
   },
-  filterOptionActive: { backgroundColor: "#173f35" },
-  filterText: { color: "#60736a", fontSize: 12, fontWeight: "800" },
+  filterOptionActive: { backgroundColor: "#3a2818" },
+  filterText: { color: "#7a6a52", fontSize: 12, fontWeight: "800" },
   filterTextActive: { color: "#fff" },
   sortRow: {
     flexDirection: "row",
@@ -328,16 +328,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     backgroundColor: "#fff",
-    borderColor: "#dce6e0",
+    borderColor: "#f0dfb6",
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 11,
     paddingVertical: 9,
   },
-  sortSelectText: { color: "#173f35", fontSize: 12, fontWeight: "800" },
+  sortSelectText: { color: "#3a2818", fontSize: 12, fontWeight: "800" },
   sortModalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(23, 63, 53, 0.35)",
+    backgroundColor: "rgba(107, 72, 29, 0.35)",
     justifyContent: "center",
     padding: 20,
   },
@@ -348,7 +348,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 16,
   },
-  sortMenuTitle: { color: "#173f35", fontSize: 18, fontWeight: "800" },
+  sortMenuTitle: { color: "#3a2818", fontSize: 18, fontWeight: "800" },
   sortMenuLabel: {
     color: "#71837a",
     fontSize: 11,
@@ -360,16 +360,16 @@ const styles = StyleSheet.create({
   sortChoice: {
     flex: 1,
     alignItems: "center",
-    borderColor: "#dce6e0",
+    borderColor: "#f0dfb6",
     borderWidth: 1,
     borderRadius: 8,
     paddingVertical: 10,
   },
-  sortChoiceActive: { backgroundColor: "#173f35", borderColor: "#173f35" },
-  sortChoiceText: { color: "#60736a", fontSize: 12, fontWeight: "800" },
+  sortChoiceActive: { backgroundColor: "#3a2818", borderColor: "#3a2818" },
+  sortChoiceText: { color: "#7a6a52", fontSize: 12, fontWeight: "800" },
   sortChoiceTextActive: { color: "#fff" },
   applySortButton: {
-    backgroundColor: "#e77945",
+    backgroundColor: "#f36f0a",
     borderRadius: 8,
     alignItems: "center",
     paddingVertical: 12,
@@ -384,7 +384,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: "#dce6e0",
+    borderColor: "#f0dfb6",
   },
   row: {
     flexDirection: "row",
@@ -392,7 +392,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#e4ebe6",
+    borderColor: "#f1dfb8",
     padding: 14,
     marginBottom: 10,
   },
@@ -406,15 +406,15 @@ const styles = StyleSheet.create({
     marginRight: 11,
   },
   productInfo: { flex: 1 },
-  productName: { color: "#173f35", fontSize: 15, fontWeight: "800" },
+  productName: { color: "#3a2818", fontSize: 15, fontWeight: "800" },
   saleCount: { color: "#71837a", fontSize: 12, marginTop: 4 },
   revenue: { color: "#bd6337", fontSize: 12, fontWeight: "800", marginTop: 4 },
   quantityInfo: { alignItems: "flex-end", marginLeft: 8 },
-  quantity: { color: "#173f35", fontSize: 16, fontWeight: "900" },
+  quantity: { color: "#3a2818", fontSize: 16, fontWeight: "900" },
   quantityLabel: { color: "#71837a", fontSize: 11, marginTop: 2 },
   empty: { alignItems: "center", paddingTop: 100 },
   emptyTitle: {
-    color: "#173f35",
+    color: "#3a2818",
     fontSize: 18,
     fontWeight: "800",
     marginTop: 14,

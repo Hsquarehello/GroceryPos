@@ -307,7 +307,7 @@ export default function AddProductScreen({ navigation, route }: Props) {
                 <MaterialCommunityIcons
                   name="chevron-down"
                   size={20}
-                  color="#60736a"
+                  color="#7a6a52"
                 />
               </Pressable>
             </>
@@ -380,7 +380,7 @@ export default function AddProductScreen({ navigation, route }: Props) {
                 <MaterialCommunityIcons
                   name="chevron-down"
                   size={20}
-                  color="#60736a"
+                  color="#7a6a52"
                 />
               </Pressable>
 
@@ -509,7 +509,7 @@ export default function AddProductScreen({ navigation, route }: Props) {
                     <MaterialCommunityIcons
                       name="check"
                       size={20}
-                      color="#e77945"
+                      color="#f36f0a"
                     />
                   )}
                 </Pressable>
@@ -560,17 +560,17 @@ export default function AddProductScreen({ navigation, route }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f5f7f3" },
+  container: { flex: 1, backgroundColor: "#fffaf0" },
   content: { padding: 20, paddingBottom: 120 }, // Android အတွက် Padding တိုးပေးထားသည်
   header: { marginBottom: 20 },
   eyebrow: {
-    color: "#e77945",
+    color: "#f36f0a",
     fontSize: 11,
     fontWeight: "800",
     letterSpacing: 1.5,
   },
   headerTitle: {
-    color: "#173f35",
+    color: "#3a2818",
     fontSize: 28,
     fontWeight: "800",
     marginTop: 4,
@@ -581,18 +581,18 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: "#dce6e0",
+    borderColor: "#f0dfb6",
   },
   cardTitle: {
     fontSize: 14,
     fontWeight: "800",
-    color: "#173f35",
+    color: "#3a2818",
     marginBottom: 10,
   },
   label: {
     fontSize: 11,
     fontWeight: "800",
-    color: "#60736a",
+    color: "#7a6a52",
     marginBottom: 6,
     marginTop: 10,
     textTransform: "uppercase",
@@ -600,16 +600,16 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: "#fff",
     borderWidth: 1,
-    borderColor: "#dce6e0",
+    borderColor: "#f0dfb6",
     borderRadius: 8,
     padding: 12,
     fontSize: 15,
-    color: "#173f35",
+    color: "#3a2818",
   },
   row: { flexDirection: "row", gap: 10 },
   col: { flex: 1 },
   scanBtn: {
-    backgroundColor: "#173f35",
+    backgroundColor: "#3a2818",
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
@@ -619,7 +619,7 @@ const styles = StyleSheet.create({
   scanBtnText: { color: "#ffffff", fontWeight: "700", fontSize: 14 },
   segmentContainer: {
     flexDirection: "row",
-    backgroundColor: "#f0f4f1",
+    backgroundColor: "#fff1c2",
     borderRadius: 8,
     padding: 4,
     marginTop: 4,
@@ -630,25 +630,25 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 6,
   },
-  segmentActive: { backgroundColor: "#173f35" },
-  segmentText: { color: "#60736a", fontWeight: "700", fontSize: 13 },
+  segmentActive: { backgroundColor: "#3a2818" },
+  segmentText: { color: "#7a6a52", fontWeight: "700", fontSize: 13 },
   segmentActiveText: { color: "#ffffff" },
   packageBox: { marginTop: 6 },
   pickerTrigger: {
     backgroundColor: "#fff",
     borderWidth: 1,
-    borderColor: "#dce6e0",
+    borderColor: "#f0dfb6",
     borderRadius: 8,
     padding: 12,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
-  pickerText: { fontSize: 15, color: "#173f35" },
+  pickerText: { fontSize: 15, color: "#3a2818" },
   packageStockBox: { marginTop: 4 },
   infoSubtext: { fontSize: 11, color: "#8a9b95", marginTop: 6 },
   saveBtn: {
-    backgroundColor: "#e77945",
+    backgroundColor: "#f36f0a",
     paddingVertical: 15,
     borderRadius: 8,
     alignItems: "center",
@@ -658,7 +658,7 @@ const styles = StyleSheet.create({
   disabledBtn: { opacity: 0.6 },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(23, 63, 53, 0.4)",
+    backgroundColor: "rgba(107, 72, 29, 0.4)",
     justifyContent: "center",
     padding: 20,
   },
@@ -666,7 +666,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontWeight: "800",
-    color: "#173f35",
+    color: "#3a2818",
     marginBottom: 12,
   },
   modalItem: {
@@ -677,7 +677,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
-  modalItemText: { fontSize: 15, fontWeight: "700", color: "#173f35" },
+  modalItemText: { fontSize: 15, fontWeight: "700", color: "#3a2818" },
   modalItemSub: { fontSize: 12, color: "#8a9b95" },
   closeBtn: { marginTop: 16, alignItems: "center" },
   closeText: { color: "#bd6337", fontWeight: "800" },

@@ -68,7 +68,7 @@ export default function TransactionsScreen({ navigation }: Props) {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => loadTransactions(0)}
-            tintColor="#e77945"
+            tintColor="#f36f0a"
           />
         }
         ListHeaderComponent={
@@ -83,7 +83,7 @@ export default function TransactionsScreen({ navigation }: Props) {
               <MaterialCommunityIcons
                 name="arrow-left"
                 size={19}
-                color="#173f35"
+                color="#3a2818"
               />
             </Pressable>
           </View>
@@ -94,7 +94,7 @@ export default function TransactionsScreen({ navigation }: Props) {
               <MaterialCommunityIcons
                 name="receipt-text-outline"
                 size={48}
-                color="#cbd9d2"
+                color="#ead8ae"
               />
               <Text style={styles.emptyTitle}>No transactions today</Text>
               <Text style={styles.emptyText}>
@@ -114,7 +114,7 @@ export default function TransactionsScreen({ navigation }: Props) {
                 <MaterialCommunityIcons
                   name="chevron-left"
                   size={18}
-                  color={page === 0 ? "#aebdb5" : "#173f35"}
+                  color={page === 0 ? "#d8c9a9" : "#3a2818"}
                 />
                 <Text
                   style={[
@@ -139,7 +139,7 @@ export default function TransactionsScreen({ navigation }: Props) {
                 <MaterialCommunityIcons
                   name="chevron-right"
                   size={18}
-                  color={!hasMore ? "#aebdb5" : "#173f35"}
+                  color={!hasMore ? "#d8c9a9" : "#3a2818"}
                 />
               </Pressable>
             </View>
@@ -165,7 +165,7 @@ function TransactionRow({ transaction }: { transaction: TransactionSummary }) {
             <MaterialCommunityIcons
               name={isCredit ? "account-clock-outline" : "cash-check"}
               size={19}
-              color={isCredit ? "#bd6337" : "#e77945"}
+              color={isCredit ? "#bd6337" : "#f36f0a"}
             />
           </View>
           <View>
@@ -211,7 +211,7 @@ function TransactionRow({ transaction }: { transaction: TransactionSummary }) {
           <MaterialCommunityIcons
             name="account-outline"
             size={15}
-            color="#60736a"
+            color="#7a6a52"
           />
           <Text style={styles.customerText}>{transaction.customer_name}</Text>
         </View>
@@ -221,7 +221,7 @@ function TransactionRow({ transaction }: { transaction: TransactionSummary }) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#f5f7f3" },
+  screen: { flex: 1, backgroundColor: "#fffaf0" },
   content: { padding: 20, paddingBottom: 40, flexGrow: 1 },
   header: {
     flexDirection: "row",
@@ -230,12 +230,12 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
   eyebrow: {
-    color: "#e77945",
+    color: "#f36f0a",
     fontSize: 11,
     fontWeight: "800",
     letterSpacing: 1.5,
   },
-  heading: { color: "#173f35", fontSize: 30, fontWeight: "800", marginTop: 4 },
+  heading: { color: "#3a2818", fontSize: 30, fontWeight: "800", marginTop: 4 },
   backButton: {
     width: 42,
     height: 42,
@@ -244,13 +244,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: "#dce6e0",
+    borderColor: "#f0dfb6",
   },
   transaction: {
     backgroundColor: "#fff",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#e4ebe6",
+    borderColor: "#f1dfb8",
     padding: 14,
     marginBottom: 10,
   },
@@ -268,26 +268,26 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  transactionTitle: { color: "#173f35", fontSize: 15, fontWeight: "800" },
-  transactionMeta: { color: "#71837a", fontSize: 12, marginTop: 3 },
+  transactionTitle: { color: "#3a2818", fontSize: 15, fontWeight: "800" },
+  transactionMeta: { color: "#8a7658", fontSize: 12, marginTop: 3 },
   badge: {
-    backgroundColor: "#eef4f1",
+    backgroundColor: "#fff1c2",
     borderRadius: 6,
     paddingHorizontal: 8,
     paddingVertical: 5,
   },
-  creditBadge: { backgroundColor: "#fff0e9" },
-  badgeText: { color: "#436157", fontSize: 10, fontWeight: "900" },
+  creditBadge: { backgroundColor: "#fff1c2" },
+  badgeText: { color: "#7a6442", fontSize: 10, fontWeight: "900" },
   creditBadgeText: { color: "#bd6337" },
-  divider: { height: 1, backgroundColor: "#eef4f1", marginVertical: 12 },
+  divider: { height: 1, backgroundColor: "#fff1c2", marginVertical: 12 },
   amountRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginTop: 5,
   },
-  amountLabel: { color: "#71837a", fontSize: 13 },
-  amountValue: { color: "#173f35", fontSize: 13, fontWeight: "800" },
+  amountLabel: { color: "#8a7658", fontSize: 13 },
+  amountValue: { color: "#3a2818", fontSize: 13, fontWeight: "800" },
   dueLabel: { color: "#bd6337", fontSize: 13, fontWeight: "700" },
   dueValue: { color: "#bd6337", fontSize: 13, fontWeight: "900" },
   customerRow: {
@@ -296,15 +296,15 @@ const styles = StyleSheet.create({
     gap: 5,
     marginTop: 10,
   },
-  customerText: { color: "#60736a", fontSize: 12, fontWeight: "700" },
+  customerText: { color: "#7a6a52", fontSize: 12, fontWeight: "700" },
   empty: { alignItems: "center", paddingTop: 100 },
   emptyTitle: {
-    color: "#173f35",
+    color: "#3a2818",
     fontSize: 18,
     fontWeight: "800",
     marginTop: 14,
   },
-  emptyText: { color: "#71837a", marginTop: 6 },
+  emptyText: { color: "#8a7658", marginTop: 6 },
   pagination: {
     flexDirection: "row",
     alignItems: "center",
@@ -317,14 +317,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 2,
     backgroundColor: "#fff",
-    borderColor: "#dce6e0",
+    borderColor: "#f0dfb6",
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 8,
   },
   disabledButton: { opacity: 0.7 },
-  pageButtonText: { color: "#173f35", fontSize: 12, fontWeight: "800" },
+  pageButtonText: { color: "#3a2818", fontSize: 12, fontWeight: "800" },
   disabledText: { color: "#aebdb5" },
-  pageText: { color: "#60736a", fontSize: 12, fontWeight: "800" },
+  pageText: { color: "#7a6a52", fontSize: 12, fontWeight: "800" },
 });

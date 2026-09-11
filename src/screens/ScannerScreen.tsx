@@ -86,7 +86,7 @@ export default function ScannerScreen({ navigation, route }: Props) {
         <Button
           title="Allow camera"
           onPress={requestPermission}
-          color="#e77945"
+          color="#f36f0a"
         />
       </View>
     );
@@ -137,7 +137,7 @@ export default function ScannerScreen({ navigation, route }: Props) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#173f35" },
+  screen: { flex: 1, backgroundColor: "#3a2818" },
   camera: { flex: 1 },
   overlay: {
     position: "absolute",
@@ -157,9 +157,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   instruction: { color: "#fff", fontWeight: "700", marginTop: 20 },
-  manual: { backgroundColor: "#f5f7f3", padding: 18 },
+  manual: { backgroundColor: "#fffaf0", padding: 18 },
   manualLabel: {
-    color: "#436157",
+    color: "#7a6442",
     fontSize: 12,
     fontWeight: "800",
     textTransform: "uppercase",
@@ -169,15 +169,15 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     backgroundColor: "#fff",
-    borderColor: "#dce6e0",
+    borderColor: "#f0dfb6",
     borderWidth: 1,
     borderRadius: 8,
     padding: 13,
-    color: "#173f35",
+    color: "#3a2818",
     fontSize: 16,
   },
   find: {
-    backgroundColor: "#e77945",
+    backgroundColor: "#f36f0a",
     borderRadius: 8,
     justifyContent: "center",
     paddingHorizontal: 20,
@@ -185,17 +185,17 @@ const styles = StyleSheet.create({
   findText: { color: "#fff", fontWeight: "800" },
   center: {
     flex: 1,
-    backgroundColor: "#f5f7f3",
+    backgroundColor: "#fffaf0",
     alignItems: "center",
     justifyContent: "center",
     padding: 28,
     gap: 15,
   },
   title: {
-    color: "#173f35",
+    color: "#3a2818",
     fontSize: 22,
     fontWeight: "800",
     textAlign: "center",
   },
-  muted: { color: "#71837a", textAlign: "center" },
+  muted: { color: "#8a7658", textAlign: "center" },
 });

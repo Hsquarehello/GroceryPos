@@ -123,7 +123,7 @@ export default function ReportsScreen({ navigation }: Props) {
         <RefreshControl
           refreshing={refreshing}
           onRefresh={loadReport}
-          tintColor="#e77945"
+          tintColor="#f36f0a"
         />
       }>
       <View style={styles.headerRow}>
@@ -134,7 +134,7 @@ export default function ReportsScreen({ navigation }: Props) {
         <Pressable
           style={styles.backButton}
           onPress={() => navigation.goBack()}>
-          <MaterialCommunityIcons name="arrow-left" size={19} color="#173f35" />
+          <MaterialCommunityIcons name="arrow-left" size={19} color="#3a2818" />
         </Pressable>
       </View>
 
@@ -176,7 +176,7 @@ export default function ReportsScreen({ navigation }: Props) {
           date={startDate}
           onPress={() => setPickerTarget("start")}
         />
-        <MaterialCommunityIcons name="arrow-right" size={18} color="#71837a" />
+        <MaterialCommunityIcons name="arrow-right" size={18} color="#8a7658" />
         <DateButton
           label="TO"
           date={endDate}
@@ -250,7 +250,7 @@ export default function ReportsScreen({ navigation }: Props) {
         <MaterialCommunityIcons
           name="information-outline"
           size={18}
-          color="#60736a"
+          color="#7a6a52"
         />
         <Text style={styles.noteText}>
           Profit uses the cost price saved when each sale was completed.
@@ -275,7 +275,7 @@ function DateButton({
       onPress={onPress}>
       <Text style={styles.dateLabel}>{label}</Text>
       <Text style={styles.dateValue}>{formatDate(date)}</Text>
-      <MaterialCommunityIcons name="calendar-blank" size={18} color="#e77945" />
+      <MaterialCommunityIcons name="calendar-blank" size={18} color="#f36f0a" />
     </Pressable>
   );
 }
@@ -297,7 +297,7 @@ function Metric({
 }) {
   const content = (
     <View style={[styles.metric, onPress && styles.metricInsidePressable]}>
-      <MaterialCommunityIcons name={icon} size={20} color="#e77945" />
+      <MaterialCommunityIcons name={icon} size={20} color="#f36f0a" />
       <Text style={styles.metricLabel}>{label}</Text>
       <Text style={[styles.metricValue, valueColor && { color: valueColor }]}>
         {value}
@@ -323,7 +323,7 @@ function Metric({
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#f5f7f3" },
+  screen: { flex: 1, backgroundColor: "#fffaf0" },
   content: { padding: 20, paddingBottom: 40 },
   headerRow: {
     flexDirection: "row",
@@ -332,12 +332,12 @@ const styles = StyleSheet.create({
     marginBottom: 22,
   },
   eyebrow: {
-    color: "#e77945",
+    color: "#f36f0a",
     fontSize: 11,
     fontWeight: "800",
     letterSpacing: 1.5,
   },
-  heading: { color: "#173f35", fontSize: 30, fontWeight: "800", marginTop: 4 },
+  heading: { color: "#3a2818", fontSize: 30, fontWeight: "800", marginTop: 4 },
   backButton: {
     width: 42,
     height: 42,
@@ -346,22 +346,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: "#dce6e0",
+    borderColor: "#f0dfb6",
   },
   hero: {
-    backgroundColor: "#173f35",
+    backgroundColor: "#f36f0a",
     borderRadius: 14,
     padding: 22,
     marginBottom: 14,
   },
   heroLabel: {
-    color: "#b8d1c3",
+    color: "#ffe8a3",
     fontSize: 11,
     fontWeight: "800",
     letterSpacing: 1.5,
   },
   heroValue: { color: "#fff", fontSize: 32, fontWeight: "900", marginTop: 8 },
-  heroSubtext: { color: "#d6e5dc", fontSize: 12, marginTop: 8 },
+  heroSubtext: { color: "#fff3d0", fontSize: 12, marginTop: 8 },
   dateRange: {
     flexDirection: "row",
     alignItems: "center",
@@ -378,15 +378,15 @@ const styles = StyleSheet.create({
     minHeight: 38,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#eef4f1",
+    backgroundColor: "#fff1c2",
     borderRadius: 9,
     paddingHorizontal: 5,
   },
   presetButtonActive: {
-    backgroundColor: "#173f35",
+    backgroundColor: "#3a2818",
   },
   presetText: {
-    color: "#60736a",
+    color: "#7a6a52",
     fontSize: 11,
     fontWeight: "800",
   },
@@ -399,18 +399,18 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#dce6e0",
+    borderColor: "#f0dfb6",
     paddingHorizontal: 12,
     paddingVertical: 9,
   },
   dateLabel: {
-    color: "#71837a",
+    color: "#8a7658",
     fontSize: 10,
     fontWeight: "800",
     letterSpacing: 1.2,
   },
   dateValue: {
-    color: "#173f35",
+    color: "#3a2818",
     fontSize: 14,
     fontWeight: "800",
     marginTop: 5,
@@ -422,26 +422,26 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#e4ebe6",
+    borderColor: "#f1dfb8",
     padding: 14,
   },
   metricPressable: { width: "48%", borderRadius: 12 },
   metricInsidePressable: { width: "100%" },
   pressed: { opacity: 0.72 },
   metricLabel: {
-    color: "#71837a",
+    color: "#8a7658",
     fontSize: 12,
     fontWeight: "700",
     marginTop: 12,
   },
   metricValue: {
-    color: "#173f35",
+    color: "#3a2818",
     fontSize: 17,
     fontWeight: "900",
     marginTop: 6,
   },
   metricSecondaryValue: {
-    color: "#60736a",
+    color: "#7a6a52",
     fontSize: 13,
     fontWeight: "800",
     marginTop: 5,
@@ -450,10 +450,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    backgroundColor: "#eef4f1",
+    backgroundColor: "#fff1c2",
     borderRadius: 10,
     padding: 12,
     marginTop: 14,
   },
-  noteText: { flex: 1, color: "#60736a", fontSize: 12, lineHeight: 18 },
+  noteText: { flex: 1, color: "#7a6a52", fontSize: 12, lineHeight: 18 },
 });

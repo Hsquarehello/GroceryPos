@@ -141,7 +141,7 @@ export default function HomeScreen({ navigation }: Props) {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={loadProducts}
-            tintColor="#e77945"
+            tintColor="#f36f0a"
           />
         }
         contentContainerStyle={products.length ? styles.list : styles.emptyList}
@@ -229,7 +229,7 @@ function NavItem({
         <MaterialCommunityIcons
           name={icon}
           size={21}
-          color={active ? "#e77945" : "#71837a"}
+          color={active ? "#f36f0a" : "#8a7658"}
         />
         {badge > 0 && (
           <View style={styles.navBadge}>
@@ -247,7 +247,7 @@ function NavItem({
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#f5f7f3", padding: 20 },
+  screen: { flex: 1, backgroundColor: "#fffaf0", padding: 20 },
   headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -256,17 +256,17 @@ const styles = StyleSheet.create({
   },
   headerActions: { flexDirection: "row", alignItems: "center", gap: 8 },
   eyebrow: {
-    color: "#e77945",
+    color: "#f36f0a",
     fontSize: 11,
     fontWeight: "800",
     letterSpacing: 1.5,
   },
-  heading: { color: "#173f35", fontSize: 30, fontWeight: "800", marginTop: 4 },
+  heading: { color: "#3a2818", fontSize: 30, fontWeight: "800", marginTop: 4 },
   scanButton: {
     flexDirection: "row",
     alignItems: "center",
     gap: 7,
-    backgroundColor: "#173f35",
+    backgroundColor: "#3a2818",
     paddingHorizontal: 14,
     paddingVertical: 11,
     borderRadius: 8,
@@ -274,19 +274,19 @@ const styles = StyleSheet.create({
   scanText: { color: "#fff", fontWeight: "700" },
   search: {
     backgroundColor: "#fff",
-    borderColor: "#dce6e0",
+    borderColor: "#f0dfb6",
     borderWidth: 1,
     borderRadius: 8,
     padding: 14,
     fontSize: 15,
-    color: "#173f35",
+    color: "#3a2818",
   },
   summary: {
     flexDirection: "row",
     justifyContent: "space-between",
     paddingVertical: 18,
   },
-  summaryLabel: { color: "#60736a", fontWeight: "700" },
+  summaryLabel: { color: "#7a6a52", fontWeight: "700" },
   warning: { color: "#bd6337", fontWeight: "700" },
   list: { paddingBottom: 150 },
   emptyList: {
@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   emptyTitle: {
-    color: "#173f35",
+    color: "#3a2818",
     fontSize: 19,
     fontWeight: "800",
     marginTop: 14,
@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 20,
     bottom: 82,
-    backgroundColor: "#e77945",
+    backgroundColor: "#f36f0a",
     borderRadius: 8,
     flexDirection: "row",
     alignItems: "center",
@@ -330,13 +330,13 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: "#fff",
     borderWidth: 1,
-    borderColor: "#dce6e0",
+    borderColor: "#f0dfb6",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-around",
     paddingHorizontal: 6,
     elevation: 5,
-    shadowColor: "#173f35",
+    shadowColor: "#6b481d",
     shadowOpacity: 0.1,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 3 },
@@ -350,7 +350,7 @@ const styles = StyleSheet.create({
   },
   navIconWrap: { position: "relative" },
   navLabel: { color: "#71837a", fontSize: 10, fontWeight: "700" },
-  navLabelActive: { color: "#e77945" },
+  navLabelActive: { color: "#f36f0a" },
   navBadge: {
     position: "absolute",
     left: 13,
@@ -359,7 +359,7 @@ const styles = StyleSheet.create({
     height: 17,
     paddingHorizontal: 3,
     borderRadius: 9,
-    backgroundColor: "#e77945",
+    backgroundColor: "#f36f0a",
     alignItems: "center",
     justifyContent: "center",
   },

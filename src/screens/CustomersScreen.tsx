@@ -105,7 +105,7 @@ export default function CustomersScreen({ navigation }: Props) {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={loadCustomers}
-            tintColor="#e77945"
+            tintColor="#f36f0a"
           />
         }>
         <View style={styles.headerRow}>
@@ -119,7 +119,7 @@ export default function CustomersScreen({ navigation }: Props) {
             <MaterialCommunityIcons
               name="arrow-left"
               size={19}
-              color="#173f35"
+              color="#3a2818"
             />
           </Pressable>
         </View>
@@ -287,7 +287,7 @@ export default function CustomersScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#f5f7f3" },
+  screen: { flex: 1, backgroundColor: "#fffaf0" },
   content: { padding: 20, paddingBottom: 40 },
   headerRow: {
     flexDirection: "row",
@@ -296,12 +296,12 @@ const styles = StyleSheet.create({
     marginBottom: 22,
   },
   eyebrow: {
-    color: "#e77945",
+    color: "#f36f0a",
     fontSize: 11,
     fontWeight: "800",
     letterSpacing: 1.5,
   },
-  heading: { color: "#173f35", fontSize: 30, fontWeight: "800", marginTop: 4 },
+  heading: { color: "#3a2818", fontSize: 30, fontWeight: "800", marginTop: 4 },
   backButton: {
     width: 42,
     height: 42,
@@ -310,10 +310,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: "#dce6e0",
+    borderColor: "#f0dfb6",
   },
   summary: {
-    backgroundColor: "#173f35",
+    backgroundColor: "#3a2818",
     borderRadius: 14,
     padding: 18,
     flexDirection: "row",
@@ -338,7 +338,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#fff",
-    borderColor: "#dce6e0",
+    borderColor: "#f0dfb6",
     borderWidth: 1,
     borderRadius: 9,
     paddingHorizontal: 12,
@@ -346,7 +346,7 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    color: "#173f35",
+    color: "#3a2818",
     fontSize: 14,
     paddingVertical: 11,
     paddingHorizontal: 8,
@@ -355,7 +355,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: "#fff",
     borderWidth: 1,
-    borderColor: "#e4ebe6",
+    borderColor: "#f1dfb8",
     borderRadius: 12,
     padding: 14,
     marginBottom: 10,
@@ -363,12 +363,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   cardInfo: { flex: 1 },
-  name: { color: "#173f35", fontSize: 16, fontWeight: "800" },
+  name: { color: "#3a2818", fontSize: 16, fontWeight: "800" },
   phone: { color: "#71837a", fontSize: 12, marginTop: 3 },
   debt: { color: "#bd6337", fontSize: 13, fontWeight: "800", marginTop: 8 },
   paid: { color: "#4c8b68" },
   repayButton: {
-    backgroundColor: "#e77945",
+    backgroundColor: "#f36f0a",
     borderRadius: 7,
     paddingHorizontal: 10,
     paddingVertical: 9,
@@ -379,7 +379,7 @@ const styles = StyleSheet.create({
   disabledButton: { backgroundColor: "#bdc9c2" },
   repayText: { color: "#fff", fontWeight: "800", fontSize: 12 },
   addButton: {
-    backgroundColor: "#e77945",
+    backgroundColor: "#f36f0a",
     borderRadius: 8,
     padding: 14,
     alignItems: "center",
@@ -392,27 +392,27 @@ const styles = StyleSheet.create({
   emptyText: { color: "#71837a", textAlign: "center", padding: 30 },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(23, 63, 53, 0.35)",
+    backgroundColor: "rgba(107, 72, 29, 0.35)",
     justifyContent: "center",
     padding: 20,
   },
   modalContent: { backgroundColor: "#fff", borderRadius: 14, padding: 18 },
   modalTitle: {
-    color: "#173f35",
+    color: "#3a2818",
     fontSize: 20,
     fontWeight: "800",
     marginBottom: 6,
   },
   modalSubtext: { color: "#71837a", fontSize: 13, marginBottom: 12 },
   input: {
-    backgroundColor: "#f5f7f3",
-    borderColor: "#dce6e0",
+    backgroundColor: "#fffaf0",
+    borderColor: "#f0dfb6",
     borderWidth: 1,
     borderRadius: 8,
     padding: 12,
-    color: "#173f35",
+    color: "#3a2818",
     marginTop: 10,
   },
   cancelButton: { alignItems: "center", padding: 12 },
-  cancelText: { color: "#60736a", fontWeight: "800" },
+  cancelText: { color: "#7a6a52", fontWeight: "800" },
 });
