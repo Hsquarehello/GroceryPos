@@ -12,7 +12,7 @@ import {
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { RootStackParamList } from "../../App";
-import { completeSale, getCustomers } from "../database/productRepository";
+import { completeSale, getCustomers } from "../database";
 import { useCartStore } from "../store/useCartStore";
 import CartItem from "../components/cart/CartItem";
 import { Customer } from "../types";

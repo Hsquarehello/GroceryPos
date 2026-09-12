@@ -15,7 +15,7 @@ import { RootStackParamList } from "../../App";
 import {
   getQuantitySoldByDateRange,
   QuantitySoldItem,
-} from "../database/productRepository";
+} from "../database";
 
 import { QuantitySoldHeader } from "../components/layout/QuantitySoldHeader";
 import {

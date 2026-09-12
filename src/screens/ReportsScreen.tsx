@@ -16,7 +16,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { RootStackParamList } from "../../App";
-import { DailyReport, getDateRangeReport } from "../database/productRepository";
+import { DailyReport, getDateRangeReport } from "../database";
 import { MetricCard } from "../components/cards/MetricCard";
 import { DateButton } from "../components/layout/DateButton";
 import {

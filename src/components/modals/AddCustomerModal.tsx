@@ -9,7 +9,7 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { createCustomer } from "../../database/productRepository";
+import { createCustomer } from "../../database";
 
 interface AddCustomerModalProps {
   visible: boolean;

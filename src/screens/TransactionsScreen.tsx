@@ -17,7 +17,7 @@ import {
   getTransactionsByDateRange,
   TransactionDetail,
   TransactionSummary,
-} from "../database/productRepository";
+} from "../database";
 import { TransactionRow } from "../components/layout/TransactionRow";
 import { TransactionDetailModal } from "../components/modals/TransactionDetailModal";
 

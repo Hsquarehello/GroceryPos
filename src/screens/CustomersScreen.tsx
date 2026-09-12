@@ -21,7 +21,7 @@ import {
   getCustomers,
   repayCustomerDebt,
   updateCustomer,
-} from "../database/productRepository";
+} from "../database";
 import { Customer } from "../types";
 import { CustomerCard } from "../components/cards/CustomerCard";
 import { CustomerFormModal } from "../components/modals/CustomerFormModal";
