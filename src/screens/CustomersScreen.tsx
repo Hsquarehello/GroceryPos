@@ -1,7 +1,6 @@
 import React, { useCallback, useState } from "react";
 import {
   Alert,
-  Modal,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -24,6 +23,10 @@ import {
   updateCustomer,
 } from "../database/productRepository";
 import { Customer } from "../types";
+import { CustomerCard } from "../components/customers/CustomerCard";
+import { CustomerFormModal } from "../components/customers/CustomerFormModal";
+import { RepaymentModal } from "../components/debts/RepaymentModal";
+import { DebtDetailModal } from "../components/debts/DebtDetailModal";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Customers">;
 
@@ -70,10 +73,7 @@ export default function CustomersScreen({ navigation }: Props) {
       } else {
         await createCustomer(name, phone);
       }
-      setName("");
-      setPhone("");
-      setEditingCustomerId(null);
-      setShowNewCustomer(false);
+      resetCustomerForm();
       await loadCustomers();
     } catch (error) {
       Alert.alert(
@@ -83,6 +83,13 @@ export default function CustomersScreen({ navigation }: Props) {
         error instanceof Error ? error.message : "Please try again.",
       );
     }
+  };
+
+  const resetCustomerForm = () => {
+    setName("");
+    setPhone("");
+    setEditingCustomerId(null);
+    setShowNewCustomer(false);
   };
 
   const openEditCustomer = (customer: Customer) => {
@@ -253,65 +260,17 @@ export default function CustomersScreen({ navigation }: Props) {
         </Pressable>
 
         {visibleCustomers.map((customer) => (
-          <View key={customer.id} style={styles.card}>
-            <View style={styles.cardHeader}>
-              <Pressable
-                style={styles.editIconButton}
-                onPress={() => openEditCustomer(customer)}
-                accessibilityLabel={`Edit ${customer.name}`}>
-                <MaterialCommunityIcons
-                  name="pencil-outline"
-                  size={18}
-                  color="#3a2818"
-                />
-              </Pressable>
-
-              <Pressable
-                style={styles.deleteIconButton}
-                onPress={() => confirmDeleteCustomer(customer)}
-                accessibilityLabel={`Delete ${customer.name}`}>
-                <MaterialCommunityIcons
-                  name="delete-outline"
-                  size={18}
-                  color="#bd6337"
-                />
-              </Pressable>
-            </View>
-
-            <Pressable onPress={() => void openDebtDetails(customer)}>
-              <View style={styles.cardInfo}>
-                <Text style={styles.name}>{customer.name}</Text>
-                {!!customer.phone && (
-                  <Text style={styles.phone}>{customer.phone}</Text>
-                )}
-                <Text
-                  style={[
-                    styles.debt,
-                    customer.total_debt === 0 && styles.paid,
-                  ]}>
-                  {customer.total_debt.toLocaleString()} MMK outstanding
-                </Text>
-              </View>
-            </Pressable>
-
-            <Pressable
-              style={[
-                styles.repayButton,
-                customer.total_debt === 0 && styles.disabledButton,
-              ]}
-              disabled={customer.total_debt === 0}
-              onPress={() => {
-                setSelectedCustomer(customer);
-                setShowRepayment(true);
-              }}>
-              <MaterialCommunityIcons
-                name="cash-check"
-                size={17}
-                color="#fff"
-              />
-              <Text style={styles.repayText}>Repay</Text>
-            </Pressable>
-          </View>
+          <CustomerCard
+            key={customer.id}
+            customer={customer}
+            onEdit={openEditCustomer}
+            onDelete={confirmDeleteCustomer}
+            onOpenDetails={(c) => void openDebtDetails(c)}
+            onRepay={(c) => {
+              setSelectedCustomer(c);
+              setShowRepayment(true);
+            }}
+          />
         ))}
 
         {!customers.length && (
@@ -322,236 +281,50 @@ export default function CustomersScreen({ navigation }: Props) {
         )}
       </ScrollView>
 
-      <Modal
+      {/* Debt Detail Modal Component */}
+      <DebtDetailModal
         visible={showDebtDetail}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowDebtDetail(false)}>
-        <View style={styles.modalOverlay}>
-          <View style={styles.detailModalContent}>
-            <View style={styles.detailHeader}>
-              <View>
-                <Text style={styles.modalTitle}>Debt history</Text>
-                <Text style={styles.modalSubtext}>
-                  {debtDetail?.name ?? "Customer"}
-                </Text>
-              </View>
-              <Pressable
-                style={styles.closeIconButton}
-                onPress={() => setShowDebtDetail(false)}>
-                <MaterialCommunityIcons
-                  name="close"
-                  size={20}
-                  color="#3a2818"
-                />
-              </Pressable>
-            </View>
+        loading={loadingDebtDetail}
+        debtDetail={debtDetail}
+        onClose={() => setShowDebtDetail(false)}
+        onNavigateToTransaction={(transactionId) => {
+          setShowDebtDetail(false);
+          navigation.navigate("Transactions", { transactionId });
+        }}
+        onRecordPayment={() => {
+          if (!debtDetail) return;
+          setShowDebtDetail(false);
+          setSelectedCustomer({
+            id: debtDetail.customer_id,
+            name: debtDetail.name,
+            phone: debtDetail.phone,
+            total_debt: debtDetail.total_debt,
+          });
+          setShowRepayment(true);
+        }}
+      />
 
-            {loadingDebtDetail ? (
-              <Text style={styles.emptyText}>Loading debt details...</Text>
-            ) : debtDetail ? (
-              <>
-                <View style={styles.detailSummaryCard}>
-                  <Text style={styles.summaryLabel}>Outstanding</Text>
-                  <Text style={styles.detailSummaryValue}>
-                    {debtDetail.total_debt.toLocaleString()} MMK
-                  </Text>
-                  <Text style={styles.summaryMeta}>
-                    {debtDetail.sales.length} credit sale
-                    {debtDetail.sales.length === 1 ? "" : "s"} ·{" "}
-                    {debtDetail.repayments.length} repayment
-                    {debtDetail.repayments.length === 1 ? "" : "s"}
-                  </Text>
-                </View>
-
-                <Text style={styles.sectionTitle}>Credit sales</Text>
-                {debtDetail.sales.length ? (
-                  debtDetail.sales.map((sale) => (
-                    <Pressable
-                      key={sale.id}
-                      style={({ pressed }) => [
-                        styles.historyItem,
-                        pressed && styles.historyItemPressed,
-                      ]}
-                      onPress={() => {
-                        setShowDebtDetail(false);
-                        navigation.navigate("Transactions", {
-                          transactionId: sale.id,
-                        });
-                      }}>
-                      <View style={styles.historyRow}>
-                        <View style={styles.historyTitleRow}>
-                          <Text style={styles.historyTitle}>
-                            Sale #{sale.id}
-                          </Text>
-                          <MaterialCommunityIcons
-                            name="open-in-new"
-                            size={15}
-                            color="#f36f0a"
-                          />
-                        </View>
-                        <Text style={styles.historyAmount}>
-                          {sale.remaining_amount.toLocaleString()} MMK
-                        </Text>
-                      </View>
-                      <Text style={styles.historyMeta}>
-                        {new Date(sale.created_at).toLocaleString([], {
-                          dateStyle: "medium",
-                          timeStyle: "short",
-                        })}
-                      </Text>
-                      <Text style={styles.historyMeta}>
-                        Sale total: {sale.total_amount.toLocaleString()} MMK ·
-                        Paid now: {sale.cash_received.toLocaleString()} MMK
-                      </Text>
-                      {sale.debt_note ? (
-                        <Text style={styles.historyNote}>{sale.debt_note}</Text>
-                      ) : null}
-                    </Pressable>
-                  ))
-                ) : (
-                  <Text style={styles.emptyText}>
-                    No credit sales recorded.
-                  </Text>
-                )}
-
-                <Text style={styles.sectionTitle}>Repayments</Text>
-                {debtDetail.repayments.length ? (
-                  debtDetail.repayments.map((repaymentItem) => (
-                    <View key={repaymentItem.id} style={styles.historyItem}>
-                      <View style={styles.historyRow}>
-                        <Text style={styles.historyTitle}>
-                          Payment #{repaymentItem.id}
-                        </Text>
-                        <Text style={styles.historyAmountPositive}>
-                          +{repaymentItem.amount_paid.toLocaleString()} MMK
-                        </Text>
-                      </View>
-                      <Text style={styles.historyMeta}>
-                        {new Date(repaymentItem.created_at).toLocaleString([], {
-                          dateStyle: "medium",
-                          timeStyle: "short",
-                        })}
-                      </Text>
-                    </View>
-                  ))
-                ) : (
-                  <Text style={styles.emptyText}>No repayments yet.</Text>
-                )}
-
-                <Pressable
-                  style={styles.addButton}
-                  onPress={() => {
-                    setShowDebtDetail(false);
-                    setSelectedCustomer({
-                      id: debtDetail.customer_id,
-                      name: debtDetail.name,
-                      phone: debtDetail.phone,
-                      total_debt: debtDetail.total_debt,
-                    });
-                    setShowRepayment(true);
-                  }}>
-                  <MaterialCommunityIcons
-                    name="cash-check"
-                    size={17}
-                    color="#fff"
-                  />
-                  <Text style={styles.addButtonText}>Record payment</Text>
-                </Pressable>
-              </>
-            ) : (
-              <Text style={styles.emptyText}>No debt details available.</Text>
-            )}
-          </View>
-        </View>
-      </Modal>
-
-      <Modal
+      {/* Repayment Modal Component */}
+      <RepaymentModal
         visible={showRepayment}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowRepayment(false)}>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Record repayment</Text>
-            <Text style={styles.modalSubtext}>
-              {selectedCustomer?.name} owes{" "}
-              {selectedCustomer?.total_debt.toLocaleString()} MMK
-            </Text>
-            <TextInput
-              value={repayment}
-              onChangeText={setRepayment}
-              style={styles.input}
-              keyboardType="decimal-pad"
-              placeholder="Amount paid"
-              placeholderTextColor="#9aaa9f"
-            />
-            <Pressable
-              style={styles.addButton}
-              onPress={() => void saveRepayment()}>
-              <Text style={styles.addButtonText}>Save repayment</Text>
-            </Pressable>
-            <Pressable
-              style={styles.cancelButton}
-              onPress={() => setShowRepayment(false)}>
-              <Text style={styles.cancelText}>Cancel</Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
+        selectedCustomer={selectedCustomer}
+        repayment={repayment}
+        onChangeRepayment={setRepayment}
+        onSave={() => void saveRepayment()}
+        onClose={() => setShowRepayment(false)}
+      />
 
-      <Modal
+      {/* Customer Form Modal Component */}
+      <CustomerFormModal
         visible={showNewCustomer}
-        transparent
-        animationType="fade"
-        onRequestClose={() => {
-          setShowNewCustomer(false);
-          setEditingCustomerId(null);
-          setName("");
-          setPhone("");
-        }}>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>
-              {editingCustomerId !== null ? "Edit customer" : "Add customer"}
-            </Text>
-            <TextInput
-              value={name}
-              onChangeText={setName}
-              style={styles.input}
-              placeholder="Name"
-              placeholderTextColor="#9aaa9f"
-            />
-            <TextInput
-              value={phone}
-              onChangeText={setPhone}
-              style={styles.input}
-              keyboardType="phone-pad"
-              placeholder="Phone (optional)"
-              placeholderTextColor="#9aaa9f"
-            />
-            <Pressable
-              style={styles.addButton}
-              onPress={() => void saveCustomer()}>
-              <Text style={styles.addButtonText}>
-                {editingCustomerId !== null
-                  ? "Update customer"
-                  : "Save customer"}
-              </Text>
-            </Pressable>
-            <Pressable
-              style={styles.cancelButton}
-              onPress={() => {
-                setShowNewCustomer(false);
-                setEditingCustomerId(null);
-                setName("");
-                setPhone("");
-              }}>
-              <Text style={styles.cancelText}>Cancel</Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
+        editingCustomerId={editingCustomerId}
+        name={name}
+        phone={phone}
+        onChangeName={setName}
+        onChangePhone={setPhone}
+        onSave={() => void saveCustomer()}
+        onClose={resetCustomerForm}
+      />
     </View>
   );
 }
@@ -622,81 +395,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   clearSearch: { padding: 4 },
-  card: {
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: "#f1dfb8",
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 10,
-  },
-  cardHeader: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    alignItems: "center",
-    gap: 8,
-    marginBottom: 6,
-  },
-  editIconButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    backgroundColor: "#fffaf0",
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "#f0dfb6",
-  },
-  deleteIconButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    backgroundColor: "#fffaf0",
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "#f0dfb6",
-  },
-  cardInfo: { flex: 1 },
-  actionRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 8,
-    marginTop: 12,
-  },
-  inlineButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    backgroundColor: "#fffaf0",
-    borderWidth: 1,
-    borderColor: "#f0dfb6",
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    borderRadius: 8,
-    flex: 1,
-    justifyContent: "center",
-  },
-  inlineButtonText: { color: "#3a2818", fontWeight: "700", fontSize: 12 },
-  name: { color: "#3a2818", fontSize: 16, fontWeight: "800" },
-  phone: { color: "#71837a", fontSize: 12, marginTop: 3 },
-  debt: { color: "#bd6337", fontSize: 13, fontWeight: "800", marginTop: 8 },
-  paid: { color: "#4c8b68" },
-  repayButton: {
-    backgroundColor: "#f36f0a",
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    marginTop: 12,
-    width: "100%",
-  },
-  disabledButton: { backgroundColor: "#bdc9c2" },
-  repayText: { color: "#fff", fontWeight: "800", fontSize: 12 },
   addButton: {
     backgroundColor: "#f36f0a",
     borderRadius: 8,
@@ -710,96 +408,4 @@ const styles = StyleSheet.create({
   },
   addButtonText: { color: "#fff", fontWeight: "800" },
   emptyText: { color: "#71837a", textAlign: "center", padding: 30 },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(107, 72, 29, 0.35)",
-    justifyContent: "center",
-    padding: 20,
-  },
-  modalContent: { backgroundColor: "#fff", borderRadius: 14, padding: 18 },
-  detailModalContent: {
-    backgroundColor: "#fff",
-    borderRadius: 14,
-    padding: 18,
-    maxHeight: "85%",
-  },
-  detailHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  closeIconButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    backgroundColor: "#fffaf0",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  modalTitle: {
-    color: "#3a2818",
-    fontSize: 20,
-    fontWeight: "800",
-    marginBottom: 6,
-  },
-  modalSubtext: { color: "#71837a", fontSize: 13, marginBottom: 12 },
-  detailSummaryCard: {
-    backgroundColor: "#fffaf0",
-    borderWidth: 1,
-    borderColor: "#f0dfb6",
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 12,
-  },
-  detailSummaryValue: {
-    color: "#bd6337",
-    fontSize: 22,
-    fontWeight: "900",
-  },
-  summaryMeta: { color: "#71837a", fontSize: 12, marginTop: 4 },
-  sectionTitle: {
-    color: "#3a2818",
-    fontSize: 13,
-    fontWeight: "800",
-    marginTop: 8,
-    marginBottom: 6,
-    textTransform: "uppercase",
-  },
-  historyItem: {
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: "#f0dfb6",
-    borderRadius: 10,
-    padding: 10,
-    marginBottom: 8,
-  },
-  historyItemPressed: { opacity: 0.72 },
-  historyRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  historyTitleRow: { flexDirection: "row", alignItems: "center", gap: 6 },
-  historyTitle: { color: "#3a2818", fontSize: 13, fontWeight: "800" },
-  historyAmount: { color: "#bd6337", fontSize: 13, fontWeight: "800" },
-  historyAmountPositive: { color: "#4c8b68", fontSize: 13, fontWeight: "800" },
-  historyMeta: { color: "#71837a", fontSize: 12, marginTop: 4 },
-  historyNote: {
-    color: "#7a6a52",
-    fontSize: 12,
-    marginTop: 6,
-    fontStyle: "italic",
-  },
-  input: {
-    backgroundColor: "#fffaf0",
-    borderColor: "#f0dfb6",
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 12,
-    color: "#3a2818",
-    marginTop: 10,
-  },
-  cancelButton: { alignItems: "center", padding: 12 },
-  cancelText: { color: "#7a6a52", fontWeight: "800" },
 });

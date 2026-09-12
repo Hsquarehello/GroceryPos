@@ -1,7 +1,7 @@
 import React, { memo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { Product } from "../types";
+import { Product } from "../../types";
 
 interface ProductCardProps {
   item: Product;

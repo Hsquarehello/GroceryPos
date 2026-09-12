@@ -1,8 +1,8 @@
 import React, { memo, useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { CartItem as CartItemType } from "../types";
-import { getSaleQuantityStep } from "../store/useCartStore";
+import { CartItem as CartItemType } from "../../types";
+import { getSaleQuantityStep } from "../../store/useCartStore";
 
 interface CartItemProps {
   item: CartItemType;
