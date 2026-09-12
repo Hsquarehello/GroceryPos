@@ -21,8 +21,8 @@ import { QuantitySoldHeader } from "../components/layout/QuantitySoldHeader";
 import {
   UnitFilter,
   UnitFilterControl,
-} from "../components/layout/UnitFilterControl";
-import { QuantitySoldItemRow } from "../components/layout/QuantitySoldItemRow";
+} from "../components/common/UnitFilterControl";
+import { QuantitySoldItemRow } from "../components/rows/QuantitySoldItemRow";
 import {
   SortBy,
   SortDirection,

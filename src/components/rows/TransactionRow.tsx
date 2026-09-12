@@ -1,7 +1,7 @@
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { TransactionSummary } from "../../database/productRepository";
+import { TransactionSummary } from "../../database";
 import { formatMoney, formatTime } from "../../utils/formatters";
 
 interface TransactionRowProps {

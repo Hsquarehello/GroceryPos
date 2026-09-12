@@ -18,7 +18,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { RootStackParamList } from "../../App";
 import { DailyReport, getDateRangeReport } from "../database";
 import { MetricCard } from "../components/cards/MetricCard";
-import { DateButton } from "../components/layout/DateButton";
+import { DateButton } from "../components/common/DateButton";
 import {
   getPresetRange,
   Preset,

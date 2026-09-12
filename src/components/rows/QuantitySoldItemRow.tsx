@@ -1,7 +1,7 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { QuantitySoldItem } from "../../database/productRepository";
+import { QuantitySoldItem } from "../../database";
 
 interface QuantitySoldItemRowProps {
   item: QuantitySoldItem;

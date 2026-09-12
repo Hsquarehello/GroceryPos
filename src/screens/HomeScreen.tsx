@@ -19,7 +19,7 @@ import { Product } from "../types";
 
 import ProductCard from "../components/cards/ProductCard";
 import { HomeHeader } from "../components/layout/HomeHeader";
-import { ProductEmptyState } from "../components/products/ProductEmptyState";
+import { ProductEmptyState } from "../components/common/ProductEmptyState";
 import { BottomNavBar } from "../components/layout/BottomNavBar";
 
 import { useDebounce } from "../hooks/useDebounce";

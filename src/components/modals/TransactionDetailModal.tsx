@@ -4,9 +4,9 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   refundTransaction,
   TransactionDetail,
-} from "../../database/productRepository";
+} from "../../database";
 import { formatMoney } from "../../utils/formatters";
-import { DetailAmount } from "../layout/DetailAmount";
+import { DetailAmount } from "../common/DetailAmount";
 
 interface TransactionDetailModalProps {
   detail: TransactionDetail | null;

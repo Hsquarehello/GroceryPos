@@ -14,7 +14,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { RootStackParamList } from "../../App";
 import { completeSale, getCustomers } from "../database";
 import { useCartStore } from "../store/useCartStore";
-import CartItem from "../components/cart/CartItem";
+import CartItem from "../components/rows/CartItem";
 import { Customer } from "../types";
 
 import CartSummaryFooter from "../components/layout/CartSummaryFooter";

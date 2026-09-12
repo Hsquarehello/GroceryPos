@@ -18,7 +18,7 @@ import {
   TransactionDetail,
   TransactionSummary,
 } from "../database";
-import { TransactionRow } from "../components/layout/TransactionRow";
+import { TransactionRow } from "../components/rows/TransactionRow";
 import { TransactionDetailModal } from "../components/modals/TransactionDetailModal";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Transactions">;
