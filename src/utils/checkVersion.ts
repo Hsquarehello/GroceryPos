@@ -38,7 +38,17 @@ export async function downloadAndInstall(
     throw new Error("In-app APK updates are available on Android only.");
   }
 
-  const fileUri = `${FileSystem.cacheDirectory}update.apk`;
+  const isDirectApkUrl =
+    apkUrl.toLowerCase().endsWith(".apk") ||
+    apkUrl.includes("/artifacts/") ||
+    apkUrl.includes("/releases/download/");
+  if (!isDirectApkUrl || apkUrl.includes("/builds/")) {
+    throw new Error(
+      "The update link must point directly to an APK file, not an Expo build page.",
+    );
+  }
+
+  const fileUri = `${FileSystem.cacheDirectory}grocerypos-update.apk`;
 
   const fileInfo = await FileSystem.getInfoAsync(fileUri);
   if (fileInfo.exists) {
@@ -60,6 +70,17 @@ export async function downloadAndInstall(
   if (!downloadResult || downloadResult.status !== 200) {
     throw new Error(
       `Download failed with status ${downloadResult?.status ?? "unknown"}`,
+    );
+  }
+
+  const downloadedInfo = await FileSystem.getInfoAsync(downloadResult.uri);
+  if (
+    !downloadedInfo.exists ||
+    !downloadedInfo.size ||
+    downloadedInfo.size < 100000
+  ) {
+    throw new Error(
+      "The downloaded update is incomplete or is not a valid APK file.",
     );
   }
 
