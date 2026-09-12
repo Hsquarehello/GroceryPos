@@ -3,6 +3,7 @@ import { StyleSheet, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import * as SplashScreen from "expo-splash-screen";
 
 import { initDatabase } from "./src/database/db";
 import checkVersion, { UpdateInfo } from "./src/utils/checkVersion";
@@ -30,6 +31,8 @@ export type RootStackParamList = {
   Customers: undefined;
 };
 
+SplashScreen.preventAutoHideAsync();
+
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
@@ -38,10 +41,31 @@ export default function App() {
     React.useState<UpdateInfo | null>(null);
 
   useEffect(() => {
-    initDatabase();
-    setReady(true);
+    let isActive = true;
 
-    void checkVersion().then(setAvailableUpdate);
+    const prepareApp = async () => {
+      try {
+        initDatabase();
+        const updateInfo = await checkVersion();
+
+        if (isActive) {
+          setAvailableUpdate(updateInfo);
+        }
+      } catch (error) {
+        console.warn("App startup failed:", error);
+      } finally {
+        if (isActive) {
+          setReady(true);
+          await SplashScreen.hideAsync();
+        }
+      }
+    };
+
+    void prepareApp();
+
+    return () => {
+      isActive = false;
+    };
   }, []);
 
   if (!ready) {

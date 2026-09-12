@@ -1,6 +1,6 @@
 {
   "name": "grocerypos",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "main": "index.ts",
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
@@ -25,6 +25,7 @@
   "devDependencies": {
     "@react-native-community/cli": "^20.2.0",
     "@types/react": "~19.2.2",
+    "expo-module-scripts": "~56.0.3",
     "typescript": "~6.0.3"
   },
   "scripts": {

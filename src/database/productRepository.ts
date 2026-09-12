@@ -306,12 +306,15 @@ export interface TransactionSummary {
   customer_phone: string | null;
   sale_note: string | null;
   debt_note: string | null;
+  status: "COMPLETED" | "REFUNDED";
+  refunded_at: string | null;
   created_at: string;
   item_count: number;
 }
 
 export interface TransactionDetailItem {
   id: number;
+  product_id: number;
   product_name: string;
   selling_unit: QuantityLineItem["selling_unit"];
   quantity: number;
@@ -378,10 +381,10 @@ export async function getDateRangeReport(
   const end = formatLocalDate(endDate);
   const row = await db.getFirstAsync<DailyReport>(
     `SELECT
-       COALESCE((SELECT SUM(total_amount) FROM sales WHERE date(created_at, 'localtime') BETWEEN ? AND ?), 0) AS revenue,
-       COALESCE((SELECT SUM(discount_amount) FROM sales WHERE date(created_at, 'localtime') BETWEEN ? AND ?), 0) AS discount_total,
-       COALESCE((SELECT SUM(CASE WHEN payment_type = 'CASH' THEN total_amount ELSE cash_received END) FROM sales WHERE date(created_at, 'localtime') BETWEEN ? AND ?), 0) AS net_collected,
-       COALESCE((SELECT SUM(CASE WHEN payment_type = 'CREDIT' THEN total_amount - cash_received ELSE 0 END) FROM sales WHERE date(created_at, 'localtime') BETWEEN ? AND ?), 0) AS credit_outstanding,
+      COALESCE((SELECT SUM(total_amount) FROM sales WHERE status = 'COMPLETED' AND date(created_at, 'localtime') BETWEEN ? AND ?), 0) AS revenue,
+      COALESCE((SELECT SUM(discount_amount) FROM sales WHERE status = 'COMPLETED' AND date(created_at, 'localtime') BETWEEN ? AND ?), 0) AS discount_total,
+      COALESCE((SELECT SUM(CASE WHEN payment_type = 'CASH' THEN total_amount ELSE cash_received END) FROM sales WHERE status = 'COMPLETED' AND date(created_at, 'localtime') BETWEEN ? AND ?), 0) AS net_collected,
+      COALESCE((SELECT SUM(CASE WHEN payment_type = 'CREDIT' THEN total_amount - cash_received ELSE 0 END) FROM sales WHERE status = 'COMPLETED' AND date(created_at, 'localtime') BETWEEN ? AND ?), 0) AS credit_outstanding,
        COALESCE(SUM(si.quantity * COALESCE(NULLIF(si.unit_cost, 0), p.cost_price)), 0) AS cogs,
        COALESCE(SUM(si.quantity * (si.unit_price - COALESCE(NULLIF(si.unit_cost, 0), p.cost_price))), 0) AS profit,
        COUNT(DISTINCT s.id) AS transaction_count,
@@ -394,7 +397,8 @@ export async function getDateRangeReport(
      FROM sales s
      LEFT JOIN sale_items si ON si.sale_id = s.id
      LEFT JOIN products p ON p.id = si.product_id
-    WHERE date(s.created_at, 'localtime') BETWEEN ? AND ?`,
+     WHERE s.status = 'COMPLETED'
+       AND date(s.created_at, 'localtime') BETWEEN ? AND ?`,
     [start, end, start, end, start, end, start, end, start, end],
   );
 
@@ -444,12 +448,15 @@ export async function getTransactionsByDateRange(
          c.phone AS customer_phone,
          s.sale_note,
          s.debt_note,
+       s.status,
+       s.refunded_at,
        s.created_at,
        COUNT(si.id) AS item_count
      FROM sales s
      LEFT JOIN customers c ON c.id = s.customer_id
      LEFT JOIN sale_items si ON si.sale_id = s.id
-     WHERE date(s.created_at, 'localtime') BETWEEN ? AND ?
+     WHERE s.status = 'COMPLETED'
+       AND date(s.created_at, 'localtime') BETWEEN ? AND ?
      GROUP BY s.id
      ORDER BY s.created_at DESC, s.id DESC
      LIMIT ? OFFSET ?`,
@@ -477,6 +484,8 @@ export async function getTransactionDetail(
        c.phone AS customer_phone,
        s.sale_note,
        s.debt_note,
+      s.status,
+      s.refunded_at,
        s.created_at,
        COUNT(si.id) AS item_count
      FROM sales s
@@ -492,6 +501,7 @@ export async function getTransactionDetail(
   const items = await db.getAllAsync<TransactionDetailItem>(
     `SELECT
        si.id,
+      si.product_id,
        p.name AS product_name,
        p.selling_unit,
        si.quantity,
@@ -505,6 +515,69 @@ export async function getTransactionDetail(
   );
 
   return { ...transaction, items };
+}
+
+type StockProduct = {
+  parent_id: number | null;
+  conversion_rate: number;
+  is_base_unit: number;
+};
+
+function getBaseUnits(quantity: number, product: StockProduct) {
+  return product.is_base_unit ? quantity : quantity * product.conversion_rate;
+}
+
+export async function refundTransaction(transactionId: number): Promise<void> {
+  await db.withExclusiveTransactionAsync(async (transaction) => {
+    const sale = await transaction.getFirstAsync<{
+      total_amount: number;
+      cash_received: number;
+      payment_type: "CASH" | "CREDIT";
+      customer_id: number | null;
+      status: "COMPLETED" | "REFUNDED";
+    }>(
+      "SELECT total_amount, cash_received, payment_type, customer_id, status FROM sales WHERE id = ?",
+      [transactionId],
+    );
+    if (!sale) throw new Error("Sale was not found.");
+    if (sale.status === "REFUNDED")
+      throw new Error("Sale is already refunded.");
+
+    const items = await transaction.getAllAsync<{
+      product_id: number;
+      quantity: number;
+    }>("SELECT product_id, quantity FROM sale_items WHERE sale_id = ?", [
+      transactionId,
+    ]);
+    for (const item of items) {
+      const product = await transaction.getFirstAsync<StockProduct>(
+        "SELECT parent_id, conversion_rate, is_base_unit FROM products WHERE id = ?",
+        [item.product_id],
+      );
+      if (!product)
+        throw new Error("A product from this sale no longer exists.");
+      const baseProductId = product.is_base_unit
+        ? item.product_id
+        : product.parent_id;
+      if (!baseProductId)
+        throw new Error("A package product has no base product.");
+      await transaction.runAsync(
+        "UPDATE products SET stock_qty = stock_qty + ? WHERE id = ?",
+        [getBaseUnits(item.quantity, product), baseProductId],
+      );
+    }
+
+    if (sale.payment_type === "CREDIT" && sale.customer_id) {
+      await transaction.runAsync(
+        "UPDATE customers SET total_debt = MAX(0, total_debt - ?) WHERE id = ?",
+        [Math.max(0, sale.total_amount - sale.cash_received), sale.customer_id],
+      );
+    }
+    await transaction.runAsync(
+      "UPDATE sales SET status = 'REFUNDED', refunded_at = CURRENT_TIMESTAMP WHERE id = ?",
+      [transactionId],
+    );
+  });
 }
 
 export async function getDailyQuantitySold(
@@ -531,7 +604,8 @@ export async function getQuantitySoldByDateRange(
      FROM sale_items si
      INNER JOIN sales s ON s.id = si.sale_id
      INNER JOIN products p ON p.id = si.product_id
-     WHERE date(s.created_at, 'localtime') BETWEEN ? AND ?
+     WHERE s.status = 'COMPLETED'
+       AND date(s.created_at, 'localtime') BETWEEN ? AND ?
      GROUP BY si.product_id, p.name, p.selling_unit
     ORDER BY revenue DESC, p.name COLLATE NOCASE ASC`,
     [start, end],
@@ -566,7 +640,7 @@ export async function getCustomerDebtDetail(
        s.debt_note,
        s.sale_note
      FROM sales s
-     WHERE s.customer_id = ? AND s.payment_type = 'CREDIT'
+    WHERE s.customer_id = ? AND s.payment_type = 'CREDIT' AND s.status = 'COMPLETED'
      ORDER BY s.created_at DESC, s.id DESC`,
     [customerId],
   );

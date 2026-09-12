@@ -16,6 +16,7 @@ import { RootStackParamList } from "../../App";
 import {
   getTransactionDetail,
   getTransactionsByDateRange,
+  refundTransaction,
   TransactionDetail,
   TransactionSummary,
 } from "../database/productRepository";
@@ -203,6 +204,12 @@ export default function TransactionsScreen({ navigation, route }: Props) {
         detail={selectedTransaction}
         loading={loadingDetail}
         onClose={() => setSelectedTransaction(null)}
+        onChanged={async () => {
+          if (selectedTransaction) {
+            await openTransactionDetail(selectedTransaction.id);
+            await loadTransactions(page);
+          }
+        }}
       />
     </View>
   );
@@ -216,6 +223,7 @@ function TransactionRow({
   onPress: () => void;
 }) {
   const isCredit = transaction.payment_type === "CREDIT";
+  const isRefunded = transaction.status === "REFUNDED";
   const amountDue = Math.max(
     0,
     transaction.total_amount - transaction.cash_received,
@@ -242,9 +250,19 @@ function TransactionRow({
             </Text>
           </View>
         </View>
-        <View style={[styles.badge, isCredit && styles.creditBadge]}>
-          <Text style={[styles.badgeText, isCredit && styles.creditBadgeText]}>
-            {isCredit ? "CREDIT" : "CASH"}
+        <View
+          style={[
+            styles.badge,
+            isCredit && styles.creditBadge,
+            isRefunded && styles.refundedBadge,
+          ]}>
+          <Text
+            style={[
+              styles.badgeText,
+              isCredit && styles.creditBadgeText,
+              isRefunded && styles.refundedBadgeText,
+            ]}>
+            {isRefunded ? "REFUNDED" : isCredit ? "CREDIT" : "CASH"}
           </Text>
         </View>
       </View>
@@ -290,15 +308,51 @@ function TransactionDetailModal({
   detail,
   loading,
   onClose,
+  onChanged,
 }: {
   detail: TransactionDetail | null;
   loading: boolean;
   onClose: () => void;
+  onChanged: () => Promise<void>;
 }) {
+  const [processing, setProcessing] = useState(false);
   const isCredit = detail?.payment_type === "CREDIT";
   const outstanding = detail
     ? Math.max(0, detail.total_amount - detail.cash_received)
     : 0;
+
+  const refund = () => {
+    if (!detail || detail.status === "REFUNDED") return;
+    Alert.alert(
+      "Refund sale",
+      `Return all items from Sale #${detail.id} to stock?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Refund",
+          style: "destructive",
+          onPress: async () => {
+            setProcessing(true);
+            try {
+              await refundTransaction(detail.id);
+              await onChanged();
+              Alert.alert(
+                "Refund complete",
+                "The sale was refunded and stock was restored.",
+              );
+            } catch (error) {
+              Alert.alert(
+                "Could not refund sale",
+                error instanceof Error ? error.message : "Please try again.",
+              );
+            } finally {
+              setProcessing(false);
+            }
+          },
+        },
+      ],
+    );
+  };
 
   return (
     <Modal
@@ -336,13 +390,23 @@ function TransactionDetailModal({
               </Text>
 
               <View style={styles.detailStatusRow}>
-                <View style={[styles.badge, isCredit && styles.creditBadge]}>
+                <View
+                  style={[
+                    styles.badge,
+                    isCredit && styles.creditBadge,
+                    detail.status === "REFUNDED" && styles.refundedBadge,
+                  ]}>
                   <Text
                     style={[
                       styles.badgeText,
                       isCredit && styles.creditBadgeText,
+                      detail.status === "REFUNDED" && styles.refundedBadgeText,
                     ]}>
-                    {isCredit ? "CREDIT" : "CASH"}
+                    {detail.status === "REFUNDED"
+                      ? "REFUNDED"
+                      : isCredit
+                        ? "CREDIT"
+                        : "CASH"}
                   </Text>
                 </View>
                 {detail.customer_name ? (
@@ -409,6 +473,24 @@ function TransactionDetailModal({
                   ) : null}
                 </View>
               ) : null}
+
+              <View style={styles.detailActions}>
+                {detail.status !== "REFUNDED" ? (
+                  <>
+                    <Pressable
+                      style={[styles.actionButton, styles.refundButton]}
+                      onPress={refund}
+                      disabled={processing}>
+                      <MaterialCommunityIcons
+                        name="cash-refund"
+                        size={17}
+                        color="#a33e2b"
+                      />
+                      <Text style={styles.refundButtonText}>Refund sale</Text>
+                    </Pressable>
+                  </>
+                ) : null}
+              </View>
             </View>
           )}
         </View>
@@ -510,6 +592,8 @@ const styles = StyleSheet.create({
   creditBadge: { backgroundColor: "#fff1c2" },
   badgeText: { color: "#7a6442", fontSize: 10, fontWeight: "900" },
   creditBadgeText: { color: "#bd6337" },
+  refundedBadge: { backgroundColor: "#f4e4df" },
+  refundedBadgeText: { color: "#a33e2b" },
   divider: { height: 1, backgroundColor: "#fff1c2", marginVertical: 12 },
   amountRow: {
     flexDirection: "row",
@@ -644,4 +728,19 @@ const styles = StyleSheet.create({
     marginTop: 14,
   },
   noteText: { color: "#7a6a52", fontSize: 12, lineHeight: 18 },
+  detailActions: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginTop: 16,
+  },
+  actionButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  refundButton: { backgroundColor: "#f4e4df" },
+  refundButtonText: { color: "#a33e2b", fontSize: 12, fontWeight: "900" },
 });

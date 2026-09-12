@@ -65,6 +65,7 @@ The main goal is to provide a fast, simple, and reliable solution for:
   - notes
   - debt note
 - Review transaction history.
+- Refund a completed sale from transaction details and restore its inventory.
 
 ### 4.5 Customer and Debt Tracking
 
@@ -178,6 +179,8 @@ The application includes the following screens:
 - customer_id
 - sale_note
 - debt_note
+- status
+- refunded_at
 - created_at
 
 ### Customers

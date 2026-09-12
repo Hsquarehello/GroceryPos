@@ -34,6 +34,8 @@ export const initDatabase = () => {
       customer_id INTEGER,
       sale_note TEXT,
       debt_note TEXT,
+      status TEXT NOT NULL DEFAULT 'COMPLETED' CHECK(status IN ('COMPLETED', 'REFUNDED')),
+      refunded_at DATETIME,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
@@ -76,6 +78,8 @@ export const initDatabase = () => {
     "ALTER TABLE sales ADD COLUMN customer_id INTEGER",
     "ALTER TABLE sales ADD COLUMN sale_note TEXT",
     "ALTER TABLE sales ADD COLUMN debt_note TEXT",
+    "ALTER TABLE sales ADD COLUMN status TEXT NOT NULL DEFAULT 'COMPLETED'",
+    "ALTER TABLE sales ADD COLUMN refunded_at DATETIME",
   ]) {
     try {
       db.execSync(statement);

@@ -56,8 +56,7 @@ const blankForm: ProductInput = {
 export default function AddProductScreen({ navigation, route }: Props) {
   const editing = route.name === "EditProduct";
   const params = route.params as
-    | { productId?: number; barcode?: string }
-    | undefined;
+    { productId?: number; barcode?: string } | undefined;
 
   const productId = editing ? params?.productId : undefined;
   const initialBarcode = params?.barcode;
@@ -70,6 +69,7 @@ export default function AddProductScreen({ navigation, route }: Props) {
   const [initialPackageQty, setInitialPackageQty] = useState<number>(0);
   const [targetPackageQty, setTargetPackageQty] = useState<number>(0);
   const [baseProducts, setBaseProducts] = useState<Product[]>([]);
+  const [baseProductSearch, setBaseProductSearch] = useState("");
   const [saving, setSaving] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
   const [showWeightPicker, setShowWeightPicker] = useState(false);
@@ -146,6 +146,21 @@ export default function AddProductScreen({ navigation, route }: Props) {
       ? "pcs"
       : (weightUnits.find((unit) => unit.value === selectedUnit)?.label ??
         selectedUnit);
+
+  const normalizedBaseProductSearch = baseProductSearch
+    .trim()
+    .toLocaleLowerCase();
+  const visibleBaseProducts = baseProducts
+    .filter((product) => product.id !== productId)
+    .filter((product) => {
+      if (!normalizedBaseProductSearch) return true;
+      return (
+        product.name
+          .toLocaleLowerCase()
+          .includes(normalizedBaseProductSearch) ||
+        (product.barcode ?? "").includes(normalizedBaseProductSearch)
+      );
+    });
 
   // Select လုပ်ထားသော Base Product ၏ Package Stock ကို တွက်ချက်ခြင်း
   const selectedParent = baseProducts.find((p) => p.id === form.parent_id);
@@ -524,31 +539,73 @@ export default function AddProductScreen({ navigation, route }: Props) {
         </Modal>
 
         {/* Parent Product Picker Modal */}
-        <Modal visible={showPicker} transparent animationType="fade">
+        <Modal
+          visible={showPicker}
+          transparent
+          animationType="fade"
+          onRequestClose={() => {
+            setBaseProductSearch("");
+            setShowPicker(false);
+          }}>
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <Text style={styles.modalTitle}>Select Base Unit Product</Text>
+              <View style={styles.modalSearchBox}>
+                <MaterialCommunityIcons
+                  name="magnify"
+                  size={19}
+                  color="#8a9b95"
+                />
+                <TextInput
+                  value={baseProductSearch}
+                  onChangeText={setBaseProductSearch}
+                  style={styles.modalSearchInput}
+                  placeholder="Search by name or barcode"
+                  placeholderTextColor="#8a9b95"
+                  returnKeyType="search"
+                  autoCapitalize="none"
+                />
+                {!!baseProductSearch && (
+                  <Pressable
+                    style={styles.modalSearchClear}
+                    onPress={() => setBaseProductSearch("")}
+                    accessibilityLabel="Clear base product search">
+                    <MaterialCommunityIcons
+                      name="close-circle"
+                      size={18}
+                      color="#8a9b95"
+                    />
+                  </Pressable>
+                )}
+              </View>
               <ScrollView style={{ maxHeight: 280 }}>
-                {baseProducts
-                  .filter((p) => p.id !== productId)
-                  .map((p) => (
-                    <Pressable
-                      key={p.id}
-                      style={styles.modalItem}
-                      onPress={() => {
-                        setForm((prev) => ({ ...prev, parent_id: p.id! }));
-                        setShowPicker(false);
-                      }}>
-                      <Text style={styles.modalItemText}>{p.name}</Text>
-                      <Text style={styles.modalItemSub}>
-                        Stock: {p.stock_qty}
-                      </Text>
-                    </Pressable>
-                  ))}
+                {visibleBaseProducts.map((p) => (
+                  <Pressable
+                    key={p.id}
+                    style={styles.modalItem}
+                    onPress={() => {
+                      setForm((prev) => ({ ...prev, parent_id: p.id! }));
+                      setBaseProductSearch("");
+                      setShowPicker(false);
+                    }}>
+                    <Text style={styles.modalItemText}>{p.name}</Text>
+                    <Text style={styles.modalItemSub}>
+                      Stock: {p.stock_qty}
+                    </Text>
+                  </Pressable>
+                ))}
+                {!visibleBaseProducts.length && (
+                  <Text style={styles.modalEmptyText}>
+                    No matching base products.
+                  </Text>
+                )}
               </ScrollView>
               <Pressable
                 style={styles.closeBtn}
-                onPress={() => setShowPicker(false)}>
+                onPress={() => {
+                  setBaseProductSearch("");
+                  setShowPicker(false);
+                }}>
                 <Text style={styles.closeText}>Cancel</Text>
               </Pressable>
             </View>
@@ -669,6 +726,24 @@ const styles = StyleSheet.create({
     color: "#3a2818",
     marginBottom: 12,
   },
+  modalSearchBox: {
+    height: 42,
+    borderWidth: 1,
+    borderColor: "#f0dfb6",
+    borderRadius: 8,
+    backgroundColor: "#fffaf0",
+    paddingHorizontal: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  modalSearchInput: {
+    flex: 1,
+    color: "#3a2818",
+    fontSize: 14,
+    paddingHorizontal: 8,
+  },
+  modalSearchClear: { padding: 3 },
   modalItem: {
     paddingVertical: 12,
     borderBottomWidth: 1,
@@ -679,6 +754,12 @@ const styles = StyleSheet.create({
   },
   modalItemText: { fontSize: 15, fontWeight: "700", color: "#3a2818" },
   modalItemSub: { fontSize: 12, color: "#8a9b95" },
+  modalEmptyText: {
+    color: "#8a9b95",
+    fontSize: 13,
+    textAlign: "center",
+    paddingVertical: 24,
+  },
   closeBtn: { marginTop: 16, alignItems: "center" },
   closeText: { color: "#bd6337", fontWeight: "800" },
 });
