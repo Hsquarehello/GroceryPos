@@ -241,6 +241,17 @@ export default function CustomersScreen({ navigation }: Props) {
           )}
         </View>
 
+        <Pressable
+          style={styles.addButton}
+          onPress={() => setShowNewCustomer(true)}>
+          <MaterialCommunityIcons
+            name="account-plus-outline"
+            size={20}
+            color="#fff"
+          />
+          <Text style={styles.addButtonText}>Add customer</Text>
+        </Pressable>
+
         {visibleCustomers.map((customer) => (
           <View key={customer.id} style={styles.card}>
             <View style={styles.cardHeader}>
@@ -309,17 +320,6 @@ export default function CustomersScreen({ navigation }: Props) {
         {!!customers.length && !visibleCustomers.length && (
           <Text style={styles.emptyText}>No matching customers.</Text>
         )}
-
-        <Pressable
-          style={styles.addButton}
-          onPress={() => setShowNewCustomer(true)}>
-          <MaterialCommunityIcons
-            name="account-plus-outline"
-            size={20}
-            color="#fff"
-          />
-          <Text style={styles.addButtonText}>Add customer</Text>
-        </Pressable>
       </ScrollView>
 
       <Modal
@@ -367,9 +367,29 @@ export default function CustomersScreen({ navigation }: Props) {
                 <Text style={styles.sectionTitle}>Credit sales</Text>
                 {debtDetail.sales.length ? (
                   debtDetail.sales.map((sale) => (
-                    <View key={sale.id} style={styles.historyItem}>
+                    <Pressable
+                      key={sale.id}
+                      style={({ pressed }) => [
+                        styles.historyItem,
+                        pressed && styles.historyItemPressed,
+                      ]}
+                      onPress={() => {
+                        setShowDebtDetail(false);
+                        navigation.navigate("Transactions", {
+                          transactionId: sale.id,
+                        });
+                      }}>
                       <View style={styles.historyRow}>
-                        <Text style={styles.historyTitle}>Sale #{sale.id}</Text>
+                        <View style={styles.historyTitleRow}>
+                          <Text style={styles.historyTitle}>
+                            Sale #{sale.id}
+                          </Text>
+                          <MaterialCommunityIcons
+                            name="open-in-new"
+                            size={15}
+                            color="#f36f0a"
+                          />
+                        </View>
                         <Text style={styles.historyAmount}>
                           {sale.remaining_amount.toLocaleString()} MMK
                         </Text>
@@ -387,7 +407,7 @@ export default function CustomersScreen({ navigation }: Props) {
                       {sale.debt_note ? (
                         <Text style={styles.historyNote}>{sale.debt_note}</Text>
                       ) : null}
-                    </View>
+                    </Pressable>
                   ))
                 ) : (
                   <Text style={styles.emptyText}>
@@ -686,6 +706,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 7,
     marginTop: 8,
+    marginBottom: 14,
   },
   addButtonText: { color: "#fff", fontWeight: "800" },
   emptyText: { color: "#71837a", textAlign: "center", padding: 30 },
@@ -753,11 +774,13 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 8,
   },
+  historyItemPressed: { opacity: 0.72 },
   historyRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
+  historyTitleRow: { flexDirection: "row", alignItems: "center", gap: 6 },
   historyTitle: { color: "#3a2818", fontSize: 13, fontWeight: "800" },
   historyAmount: { color: "#bd6337", fontSize: 13, fontWeight: "800" },
   historyAmountPositive: { color: "#4c8b68", fontSize: 13, fontWeight: "800" },

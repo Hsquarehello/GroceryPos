@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   Alert,
   FlatList,
@@ -39,8 +39,21 @@ export default function QuantitySoldScreen({ navigation, route }: Props) {
   const [sortBy, setSortBy] = useState<SortBy>("quantity");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [showSortMenu, setShowSortMenu] = useState(false);
-  const startDate = route.params?.startDate ?? new Date();
-  const endDate = route.params?.endDate ?? startDate;
+  const [defaultDate] = useState(() => new Date());
+  const startDate = useMemo(
+    () =>
+      route.params?.startDate
+        ? new Date(`${route.params.startDate}T00:00:00`)
+        : defaultDate,
+    [defaultDate, route.params?.startDate],
+  );
+  const endDate = useMemo(
+    () =>
+      route.params?.endDate
+        ? new Date(`${route.params.endDate}T00:00:00`)
+        : startDate,
+    [route.params?.endDate, startDate],
+  );
 
   const loadItems = useCallback(async () => {
     setRefreshing(true);

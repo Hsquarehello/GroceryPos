@@ -298,12 +298,29 @@ export function calculateQuantityMetrics(
 export interface TransactionSummary {
   id: number;
   total_amount: number;
+  discount_amount: number;
   cash_received: number;
   change_amount: number;
   payment_type: "CASH" | "CREDIT";
   customer_name: string | null;
+  customer_phone: string | null;
+  sale_note: string | null;
+  debt_note: string | null;
   created_at: string;
   item_count: number;
+}
+
+export interface TransactionDetailItem {
+  id: number;
+  product_name: string;
+  selling_unit: QuantityLineItem["selling_unit"];
+  quantity: number;
+  unit_price: number;
+  line_total: number;
+}
+
+export interface TransactionDetail extends TransactionSummary {
+  items: TransactionDetailItem[];
 }
 
 export interface TransactionPage {
@@ -419,10 +436,14 @@ export async function getTransactionsByDateRange(
     `SELECT
        s.id,
        s.total_amount,
+         s.discount_amount,
        s.cash_received,
        s.change_amount,
        s.payment_type,
        c.name AS customer_name,
+         c.phone AS customer_phone,
+         s.sale_note,
+         s.debt_note,
        s.created_at,
        COUNT(si.id) AS item_count
      FROM sales s
@@ -439,6 +460,51 @@ export async function getTransactionsByDateRange(
     transactions: rows.slice(0, limit),
     hasMore: rows.length > limit,
   };
+}
+
+export async function getTransactionDetail(
+  transactionId: number,
+): Promise<TransactionDetail | null> {
+  const transaction = await db.getFirstAsync<TransactionSummary>(
+    `SELECT
+       s.id,
+       s.total_amount,
+       s.discount_amount,
+       s.cash_received,
+       s.change_amount,
+       s.payment_type,
+       c.name AS customer_name,
+       c.phone AS customer_phone,
+       s.sale_note,
+       s.debt_note,
+       s.created_at,
+       COUNT(si.id) AS item_count
+     FROM sales s
+     LEFT JOIN customers c ON c.id = s.customer_id
+     LEFT JOIN sale_items si ON si.sale_id = s.id
+     WHERE s.id = ?
+     GROUP BY s.id`,
+    [transactionId],
+  );
+
+  if (!transaction) return null;
+
+  const items = await db.getAllAsync<TransactionDetailItem>(
+    `SELECT
+       si.id,
+       p.name AS product_name,
+       p.selling_unit,
+       si.quantity,
+       si.unit_price,
+       si.quantity * si.unit_price AS line_total
+     FROM sale_items si
+     INNER JOIN products p ON p.id = si.product_id
+     WHERE si.sale_id = ?
+     ORDER BY si.id ASC`,
+    [transactionId],
+  );
+
+  return { ...transaction, items };
 }
 
 export async function getDailyQuantitySold(

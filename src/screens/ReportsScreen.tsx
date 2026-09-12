@@ -41,6 +41,13 @@ const formatDate = (date: Date) =>
     year: "numeric",
   });
 
+const formatRouteDate = (date: Date) =>
+  [date.getFullYear(), date.getMonth() + 1, date.getDate()]
+    .map((part, index) =>
+      index === 0 ? String(part) : String(part).padStart(2, "0"),
+    )
+    .join("-");
+
 type Preset = "today" | "yesterday" | "week" | "month";
 
 function getPresetRange(preset: Preset, today = new Date()) {
@@ -217,6 +224,11 @@ export default function ReportsScreen({ navigation }: Props) {
           icon="cash-register"
         />
         <Metric
+          label="COGS"
+          value={formatMoney(report.cogs)}
+          icon="cart-minus"
+        />
+        <Metric
           label="Discount given"
           value={formatMoney(report.discount_total)}
           icon="sale-outline"
@@ -227,18 +239,13 @@ export default function ReportsScreen({ navigation }: Props) {
           icon="account-clock-outline"
         />
         <Metric
-          label="COGS"
-          value={formatMoney(report.cogs)}
-          icon="cart-minus"
-        />
-        <Metric
           label="Transactions"
           value={report.transaction_count.toLocaleString()}
           icon="receipt-text-outline"
           onPress={() =>
             navigation.navigate("Transactions", {
-              startDate,
-              endDate,
+              startDate: formatRouteDate(startDate),
+              endDate: formatRouteDate(endDate),
             })
           }
         />
@@ -249,8 +256,8 @@ export default function ReportsScreen({ navigation }: Props) {
           icon="scale-balance"
           onPress={() =>
             navigation.navigate("QuantitySold", {
-              startDate,
-              endDate,
+              startDate: formatRouteDate(startDate),
+              endDate: formatRouteDate(endDate),
             })
           }
         />

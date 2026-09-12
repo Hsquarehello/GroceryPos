@@ -23,8 +23,10 @@ export type RootStackParamList = {
   Scanner: { mode?: "cart" | "product" } | undefined;
   Cart: undefined;
   Reports: undefined;
-  Transactions: { startDate?: Date; endDate?: Date } | undefined;
-  QuantitySold: { startDate?: Date; endDate?: Date } | undefined;
+  Transactions:
+    | { startDate?: string; endDate?: string; transactionId?: number }
+    | undefined;
+  QuantitySold: { startDate?: string; endDate?: string } | undefined;
   Customers: undefined;
 };
 
