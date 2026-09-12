@@ -7,7 +7,7 @@ import * as SplashScreen from "expo-splash-screen";
 
 import { initDatabase } from "./src/database/db";
 import checkVersion, { UpdateInfo } from "./src/utils/checkVersion";
-import UpdateModal from "./src/components/UpdateModal";
+import UpdateModal from "./src/components/modals/UpdateModal";
 import HomeScreen from "./src/screens/HomeScreen";
 import AddProductScreen from "./src/screens/AddProductScreen";
 import ScannerScreen from "./src/screens/ScannerScreen";

@@ -8,7 +8,7 @@ import {
   View,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { downloadAndInstall, UpdateInfo } from "../utils/checkVersion";
+import { downloadAndInstall, UpdateInfo } from "../../utils/checkVersion";
 
 type Props = {
   update: UpdateInfo | null;

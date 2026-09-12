@@ -17,10 +17,10 @@ import { useCartStore } from "../store/useCartStore";
 import CartItem from "../components/cart/CartItem";
 import { Customer } from "../types";
 
-import CartSummaryFooter from "../components/cart/CartSummaryFooter";
-import MoreOptionsModal from "../components/cart/MoreOptionsModal";
-import CustomerSelectModal from "../components/customers/CustomerSelectModal";
-import AddCustomerModal from "../components/customers/AddCustomerModal";
+import CartSummaryFooter from "../components/layout/CartSummaryFooter";
+import MoreOptionsModal from "../components/modals/MoreOptionsModal";
+import CustomerSelectModal from "../components/modals/CustomerSelectModal";
+import AddCustomerModal from "../components/modals/AddCustomerModal";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Cart">;
 

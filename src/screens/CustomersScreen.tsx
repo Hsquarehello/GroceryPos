@@ -23,10 +23,10 @@ import {
   updateCustomer,
 } from "../database/productRepository";
 import { Customer } from "../types";
-import { CustomerCard } from "../components/customers/CustomerCard";
-import { CustomerFormModal } from "../components/customers/CustomerFormModal";
-import { RepaymentModal } from "../components/debts/RepaymentModal";
-import { DebtDetailModal } from "../components/debts/DebtDetailModal";
+import { CustomerCard } from "../components/cards/CustomerCard";
+import { CustomerFormModal } from "../components/modals/CustomerFormModal";
+import { RepaymentModal } from "../components/modals/RepaymentModal";
+import { DebtDetailModal } from "../components/modals/DebtDetailModal";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Customers">;
 
