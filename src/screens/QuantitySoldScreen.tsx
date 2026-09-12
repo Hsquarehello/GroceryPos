@@ -17,10 +17,17 @@ import {
   QuantitySoldItem,
 } from "../database/productRepository";
 
-import { QuantitySoldHeader } from "../components/QuantitySoldHeader";
-import { UnitFilter, UnitFilterControl } from "../components/UnitFilterControl";
-import { QuantitySoldItemRow } from "../components/QuantitySoldItemRow";
-import { SortBy, SortDirection, SortModal } from "../components/SortModal";
+import { QuantitySoldHeader } from "../components/layout/QuantitySoldHeader";
+import {
+  UnitFilter,
+  UnitFilterControl,
+} from "../components/layout/UnitFilterControl";
+import { QuantitySoldItemRow } from "../components/layout/QuantitySoldItemRow";
+import {
+  SortBy,
+  SortDirection,
+  SortModal,
+} from "../components/modals/SortModal";
 
 type Props = NativeStackScreenProps<RootStackParamList, "QuantitySold">;
 
