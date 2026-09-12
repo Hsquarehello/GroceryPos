@@ -14,7 +14,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { RootStackParamList } from "../../App";
 import {
-  getDailyQuantitySold,
+  getQuantitySoldByDateRange,
   QuantitySoldItem,
 } from "../database/productRepository";
 
@@ -32,24 +32,26 @@ const formatQuantity = (
 const formatMoney = (value: number) =>
   `${Math.round(value).toLocaleString()} MMK`;
 
-export default function QuantitySoldScreen({ navigation }: Props) {
+export default function QuantitySoldScreen({ navigation, route }: Props) {
   const [items, setItems] = useState<QuantitySoldItem[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [unitFilter, setUnitFilter] = useState<UnitFilter>("all");
   const [sortBy, setSortBy] = useState<SortBy>("quantity");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [showSortMenu, setShowSortMenu] = useState(false);
+  const startDate = route.params?.startDate ?? new Date();
+  const endDate = route.params?.endDate ?? startDate;
 
   const loadItems = useCallback(async () => {
     setRefreshing(true);
     try {
-      setItems(await getDailyQuantitySold());
+      setItems(await getQuantitySoldByDateRange(startDate, endDate));
     } catch {
       Alert.alert("Error", "Could not load quantity sold.");
     } finally {
       setRefreshing(false);
     }
-  }, []);
+  }, [endDate, startDate]);
 
   useFocusEffect(
     useCallback(() => {
@@ -90,7 +92,11 @@ export default function QuantitySoldScreen({ navigation }: Props) {
           <View>
             <View style={styles.header}>
               <View>
-                <Text style={styles.eyebrow}>TODAY</Text>
+                <Text style={styles.eyebrow}>
+                  {startDate.toDateString() === endDate.toDateString()
+                    ? "SELECTED DATE"
+                    : "DATE RANGE"}
+                </Text>
                 <Text style={styles.heading}>Quantity sold</Text>
                 <Text style={styles.subheading}>
                   Products sold across completed sales
@@ -159,10 +165,10 @@ export default function QuantitySoldScreen({ navigation }: Props) {
               />
               <Text style={styles.emptyTitle}>
                 {unitFilter === "all"
-                  ? "No quantities sold today"
+                  ? "No quantities sold for this period"
                   : unitFilter === "items"
-                    ? "No item products sold today"
-                    : "No weight products sold today"}
+                    ? "No item products sold for this period"
+                    : "No weight products sold for this period"}
               </Text>
               <Text style={styles.emptyText}>
                 Completed sale quantities will appear here.

@@ -311,6 +311,31 @@ export interface TransactionPage {
   hasMore: boolean;
 }
 
+export interface CustomerDebtSale {
+  id: number;
+  total_amount: number;
+  cash_received: number;
+  remaining_amount: number;
+  created_at: string;
+  debt_note: string | null;
+  sale_note: string | null;
+}
+
+export interface CustomerDebtRepayment {
+  id: number;
+  amount_paid: number;
+  created_at: string;
+}
+
+export interface CustomerDebtDetail {
+  customer_id: number;
+  name: string;
+  phone: string | null;
+  total_debt: number;
+  sales: CustomerDebtSale[];
+  repayments: CustomerDebtRepayment[];
+}
+
 export interface QuantitySoldItem {
   product_id: number;
   product_name: string;
@@ -378,11 +403,17 @@ export async function getDailyTransactions(
   limit = 10,
   offset = 0,
 ): Promise<TransactionPage> {
-  const day = [date.getFullYear(), date.getMonth() + 1, date.getDate()]
-    .map((part, index) =>
-      index === 0 ? String(part) : String(part).padStart(2, "0"),
-    )
-    .join("-");
+  return getTransactionsByDateRange(date, date, limit, offset);
+}
+
+export async function getTransactionsByDateRange(
+  startDate = new Date(),
+  endDate = new Date(),
+  limit = 10,
+  offset = 0,
+): Promise<TransactionPage> {
+  const start = formatLocalDate(startDate);
+  const end = formatLocalDate(endDate);
 
   const rows = await db.getAllAsync<TransactionSummary>(
     `SELECT
@@ -397,11 +428,11 @@ export async function getDailyTransactions(
      FROM sales s
      LEFT JOIN customers c ON c.id = s.customer_id
      LEFT JOIN sale_items si ON si.sale_id = s.id
-     WHERE date(s.created_at, 'localtime') = ?
+     WHERE date(s.created_at, 'localtime') BETWEEN ? AND ?
      GROUP BY s.id
      ORDER BY s.created_at DESC, s.id DESC
      LIMIT ? OFFSET ?`,
-    [day, limit + 1, offset],
+    [start, end, limit + 1, offset],
   );
 
   return {
@@ -413,11 +444,15 @@ export async function getDailyTransactions(
 export async function getDailyQuantitySold(
   date = new Date(),
 ): Promise<QuantitySoldItem[]> {
-  const day = [date.getFullYear(), date.getMonth() + 1, date.getDate()]
-    .map((part, index) =>
-      index === 0 ? String(part) : String(part).padStart(2, "0"),
-    )
-    .join("-");
+  return getQuantitySoldByDateRange(date, date);
+}
+
+export async function getQuantitySoldByDateRange(
+  startDate = new Date(),
+  endDate = new Date(),
+): Promise<QuantitySoldItem[]> {
+  const start = formatLocalDate(startDate);
+  const end = formatLocalDate(endDate);
 
   return db.getAllAsync<QuantitySoldItem>(
     `SELECT
@@ -430,10 +465,10 @@ export async function getDailyQuantitySold(
      FROM sale_items si
      INNER JOIN sales s ON s.id = si.sale_id
      INNER JOIN products p ON p.id = si.product_id
-     WHERE date(s.created_at, 'localtime') = ?
+     WHERE date(s.created_at, 'localtime') BETWEEN ? AND ?
      GROUP BY si.product_id, p.name, p.selling_unit
     ORDER BY revenue DESC, p.name COLLATE NOCASE ASC`,
-    [day],
+    [start, end],
   );
 }
 
@@ -441,6 +476,51 @@ export async function getCustomers(): Promise<Customer[]> {
   return db.getAllAsync<Customer>(
     "SELECT id, name, phone, total_debt, created_at FROM customers ORDER BY name COLLATE NOCASE ASC",
   );
+}
+
+export async function getCustomerDebtDetail(
+  customerId: number,
+): Promise<CustomerDebtDetail> {
+  const customer = await db.getFirstAsync<Customer>(
+    "SELECT id, name, phone, total_debt, created_at FROM customers WHERE id = ?",
+    [customerId],
+  );
+
+  if (!customer) {
+    throw new Error("Customer not found.");
+  }
+
+  const sales = await db.getAllAsync<CustomerDebtSale>(
+    `SELECT
+       s.id,
+       s.total_amount,
+       s.cash_received,
+       (s.total_amount - s.cash_received) AS remaining_amount,
+       s.created_at,
+       s.debt_note,
+       s.sale_note
+     FROM sales s
+     WHERE s.customer_id = ? AND s.payment_type = 'CREDIT'
+     ORDER BY s.created_at DESC, s.id DESC`,
+    [customerId],
+  );
+
+  const repayments = await db.getAllAsync<CustomerDebtRepayment>(
+    `SELECT id, amount_paid, created_at
+     FROM debt_repayments
+     WHERE customer_id = ?
+     ORDER BY created_at DESC, id DESC`,
+    [customerId],
+  );
+
+  return {
+    customer_id: customer.id!,
+    name: customer.name,
+    phone: customer.phone,
+    total_debt: customer.total_debt,
+    sales,
+    repayments,
+  };
 }
 
 export async function createCustomer(
@@ -454,6 +534,31 @@ export async function createCustomer(
     [trimmedName, phone.trim() || null],
   );
   return result.lastInsertRowId;
+}
+
+export async function updateCustomer(
+  id: number,
+  name: string,
+  phone = "",
+): Promise<void> {
+  const trimmedName = name.trim();
+  if (!trimmedName) throw new Error("Customer name is required.");
+
+  const result = await db.runAsync(
+    "UPDATE customers SET name = ?, phone = ? WHERE id = ?",
+    [trimmedName, phone.trim() || null, id],
+  );
+
+  if (result.changes !== 1) {
+    throw new Error("Customer was not found.");
+  }
+}
+
+export async function deleteCustomer(id: number): Promise<void> {
+  const result = await db.runAsync("DELETE FROM customers WHERE id = ?", [id]);
+  if (result.changes !== 1) {
+    throw new Error("Customer was not found.");
+  }
 }
 
 export async function repayCustomerDebt(

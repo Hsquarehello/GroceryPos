@@ -235,14 +235,24 @@ export default function ReportsScreen({ navigation }: Props) {
           label="Transactions"
           value={report.transaction_count.toLocaleString()}
           icon="receipt-text-outline"
-          onPress={() => navigation.navigate("Transactions")}
+          onPress={() =>
+            navigation.navigate("Transactions", {
+              startDate,
+              endDate,
+            })
+          }
         />
         <Metric
           label="Quantity sold"
           value={`${report.total_items.toLocaleString()} items`}
           secondaryValue={`${report.total_weight_tcl.toFixed(2)} tcl`}
           icon="scale-balance"
-          onPress={() => navigation.navigate("QuantitySold")}
+          onPress={() =>
+            navigation.navigate("QuantitySold", {
+              startDate,
+              endDate,
+            })
+          }
         />
       </View>
 

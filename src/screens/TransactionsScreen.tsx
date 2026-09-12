@@ -13,7 +13,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { RootStackParamList } from "../../App";
 import {
-  getDailyTransactions,
+  getTransactionsByDateRange,
   TransactionSummary,
 } from "../database/productRepository";
 
@@ -27,30 +27,36 @@ function formatTime(value: string) {
   return time.slice(0, 5);
 }
 
-export default function TransactionsScreen({ navigation }: Props) {
+export default function TransactionsScreen({ navigation, route }: Props) {
   const [transactions, setTransactions] = useState<TransactionSummary[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(false);
   const pageSize = 10;
+  const startDate = route.params?.startDate ?? new Date();
+  const endDate = route.params?.endDate ?? startDate;
 
-  const loadTransactions = useCallback(async (targetPage: number) => {
-    setRefreshing(true);
-    try {
-      const result = await getDailyTransactions(
-        new Date(),
-        pageSize,
-        targetPage * pageSize,
-      );
-      setTransactions(result.transactions);
-      setHasMore(result.hasMore);
-      setPage(targetPage);
-    } catch {
-      Alert.alert("Error", "Could not load today's transactions.");
-    } finally {
-      setRefreshing(false);
-    }
-  }, []);
+  const loadTransactions = useCallback(
+    async (targetPage: number) => {
+      setRefreshing(true);
+      try {
+        const result = await getTransactionsByDateRange(
+          startDate,
+          endDate,
+          pageSize,
+          targetPage * pageSize,
+        );
+        setTransactions(result.transactions);
+        setHasMore(result.hasMore);
+        setPage(targetPage);
+      } catch {
+        Alert.alert("Error", "Could not load the selected transactions.");
+      } finally {
+        setRefreshing(false);
+      }
+    },
+    [endDate, startDate],
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -74,7 +80,11 @@ export default function TransactionsScreen({ navigation }: Props) {
         ListHeaderComponent={
           <View style={styles.header}>
             <View>
-              <Text style={styles.eyebrow}>TODAY</Text>
+              <Text style={styles.eyebrow}>
+                {startDate.toDateString() === endDate.toDateString()
+                  ? "SELECTED DATE"
+                  : "DATE RANGE"}
+              </Text>
               <Text style={styles.heading}>Transactions</Text>
             </View>
             <Pressable

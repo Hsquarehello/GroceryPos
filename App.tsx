@@ -5,7 +5,8 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import { initDatabase } from "./src/database/db";
-import checkVersion from "./src/utils/checkVersion";
+import checkVersion, { UpdateInfo } from "./src/utils/checkVersion";
+import UpdateModal from "./src/components/UpdateModal";
 import HomeScreen from "./src/screens/HomeScreen";
 import AddProductScreen from "./src/screens/AddProductScreen";
 import ScannerScreen from "./src/screens/ScannerScreen";
@@ -22,8 +23,8 @@ export type RootStackParamList = {
   Scanner: { mode?: "cart" | "product" } | undefined;
   Cart: undefined;
   Reports: undefined;
-  Transactions: undefined;
-  QuantitySold: undefined;
+  Transactions: { startDate?: Date; endDate?: Date } | undefined;
+  QuantitySold: { startDate?: Date; endDate?: Date } | undefined;
   Customers: undefined;
 };
 
@@ -31,12 +32,14 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
   const [ready, setReady] = React.useState(false);
+  const [availableUpdate, setAvailableUpdate] =
+    React.useState<UpdateInfo | null>(null);
 
   useEffect(() => {
     initDatabase();
     setReady(true);
 
-    checkVersion();
+    void checkVersion().then(setAvailableUpdate);
   }, []);
 
   if (!ready) {
@@ -100,6 +103,10 @@ export default function App() {
           options={{ title: "Customers" }}
         />
       </Stack.Navigator>
+      <UpdateModal
+        update={availableUpdate}
+        onDismiss={() => setAvailableUpdate(null)}
+      />
     </NavigationContainer>
   );
 }

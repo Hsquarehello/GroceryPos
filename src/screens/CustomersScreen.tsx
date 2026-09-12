@@ -16,8 +16,12 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { RootStackParamList } from "../../App";
 import {
   createCustomer,
+  CustomerDebtDetail,
+  deleteCustomer,
+  getCustomerDebtDetail,
   getCustomers,
   repayCustomerDebt,
+  updateCustomer,
 } from "../database/productRepository";
 import { Customer } from "../types";
 
@@ -29,9 +33,15 @@ export default function CustomersScreen({ navigation }: Props) {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
     null,
   );
+  const [debtDetail, setDebtDetail] = useState<CustomerDebtDetail | null>(null);
   const [repayment, setRepayment] = useState("");
   const [showRepayment, setShowRepayment] = useState(false);
+  const [showDebtDetail, setShowDebtDetail] = useState(false);
   const [showNewCustomer, setShowNewCustomer] = useState(false);
+  const [editingCustomerId, setEditingCustomerId] = useState<number | null>(
+    null,
+  );
+  const [loadingDebtDetail, setLoadingDebtDetail] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [search, setSearch] = useState("");
@@ -55,17 +65,65 @@ export default function CustomersScreen({ navigation }: Props) {
 
   const saveCustomer = async () => {
     try {
-      await createCustomer(name, phone);
+      if (editingCustomerId !== null) {
+        await updateCustomer(editingCustomerId, name, phone);
+      } else {
+        await createCustomer(name, phone);
+      }
       setName("");
       setPhone("");
+      setEditingCustomerId(null);
       setShowNewCustomer(false);
       await loadCustomers();
     } catch (error) {
       Alert.alert(
-        "Could not add customer",
+        editingCustomerId !== null
+          ? "Could not update customer"
+          : "Could not add customer",
         error instanceof Error ? error.message : "Please try again.",
       );
     }
+  };
+
+  const openEditCustomer = (customer: Customer) => {
+    setEditingCustomerId(customer.id ?? null);
+    setName(customer.name);
+    setPhone(customer.phone ?? "");
+    setShowNewCustomer(true);
+  };
+
+  const confirmDeleteCustomer = (customer: Customer) => {
+    if (!customer.id) return;
+
+    Alert.alert(
+      "Delete customer",
+      `Delete ${customer.name}? This will remove the customer record and their repayment history.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deleteCustomer(customer.id!);
+              if (selectedCustomer?.id === customer.id) {
+                setSelectedCustomer(null);
+              }
+              if (debtDetail?.customer_id === customer.id) {
+                setShowDebtDetail(false);
+                setDebtDetail(null);
+              }
+              await loadCustomers();
+            } catch (error) {
+              Alert.alert(
+                "Could not delete customer",
+                error instanceof Error ? error.message : "Please try again.",
+              );
+            }
+          },
+        },
+      ],
+    );
   };
 
   const saveRepayment = async () => {
@@ -75,12 +133,34 @@ export default function CustomersScreen({ navigation }: Props) {
       setRepayment("");
       setShowRepayment(false);
       setSelectedCustomer(null);
+      if (showDebtDetail && debtDetail) {
+        const refreshed = await getCustomerDebtDetail(selectedCustomer.id!);
+        setDebtDetail(refreshed);
+      }
       await loadCustomers();
     } catch (error) {
       Alert.alert(
         "Could not record repayment",
         error instanceof Error ? error.message : "Please try again.",
       );
+    }
+  };
+
+  const openDebtDetails = async (customer: Customer) => {
+    if (!customer.id) return;
+    setSelectedCustomer(customer);
+    setLoadingDebtDetail(true);
+    try {
+      const detail = await getCustomerDebtDetail(customer.id);
+      setDebtDetail(detail);
+      setShowDebtDetail(true);
+    } catch (error) {
+      Alert.alert(
+        "Could not load debt details",
+        error instanceof Error ? error.message : "Please try again.",
+      );
+    } finally {
+      setLoadingDebtDetail(false);
     }
   };
 
@@ -163,16 +243,46 @@ export default function CustomersScreen({ navigation }: Props) {
 
         {visibleCustomers.map((customer) => (
           <View key={customer.id} style={styles.card}>
-            <View style={styles.cardInfo}>
-              <Text style={styles.name}>{customer.name}</Text>
-              {!!customer.phone && (
-                <Text style={styles.phone}>{customer.phone}</Text>
-              )}
-              <Text
-                style={[styles.debt, customer.total_debt === 0 && styles.paid]}>
-                {customer.total_debt.toLocaleString()} MMK outstanding
-              </Text>
+            <View style={styles.cardHeader}>
+              <Pressable
+                style={styles.editIconButton}
+                onPress={() => openEditCustomer(customer)}
+                accessibilityLabel={`Edit ${customer.name}`}>
+                <MaterialCommunityIcons
+                  name="pencil-outline"
+                  size={18}
+                  color="#3a2818"
+                />
+              </Pressable>
+
+              <Pressable
+                style={styles.deleteIconButton}
+                onPress={() => confirmDeleteCustomer(customer)}
+                accessibilityLabel={`Delete ${customer.name}`}>
+                <MaterialCommunityIcons
+                  name="delete-outline"
+                  size={18}
+                  color="#bd6337"
+                />
+              </Pressable>
             </View>
+
+            <Pressable onPress={() => void openDebtDetails(customer)}>
+              <View style={styles.cardInfo}>
+                <Text style={styles.name}>{customer.name}</Text>
+                {!!customer.phone && (
+                  <Text style={styles.phone}>{customer.phone}</Text>
+                )}
+                <Text
+                  style={[
+                    styles.debt,
+                    customer.total_debt === 0 && styles.paid,
+                  ]}>
+                  {customer.total_debt.toLocaleString()} MMK outstanding
+                </Text>
+              </View>
+            </Pressable>
+
             <Pressable
               style={[
                 styles.repayButton,
@@ -213,6 +323,130 @@ export default function CustomersScreen({ navigation }: Props) {
       </ScrollView>
 
       <Modal
+        visible={showDebtDetail}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowDebtDetail(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.detailModalContent}>
+            <View style={styles.detailHeader}>
+              <View>
+                <Text style={styles.modalTitle}>Debt history</Text>
+                <Text style={styles.modalSubtext}>
+                  {debtDetail?.name ?? "Customer"}
+                </Text>
+              </View>
+              <Pressable
+                style={styles.closeIconButton}
+                onPress={() => setShowDebtDetail(false)}>
+                <MaterialCommunityIcons
+                  name="close"
+                  size={20}
+                  color="#3a2818"
+                />
+              </Pressable>
+            </View>
+
+            {loadingDebtDetail ? (
+              <Text style={styles.emptyText}>Loading debt details...</Text>
+            ) : debtDetail ? (
+              <>
+                <View style={styles.detailSummaryCard}>
+                  <Text style={styles.summaryLabel}>Outstanding</Text>
+                  <Text style={styles.detailSummaryValue}>
+                    {debtDetail.total_debt.toLocaleString()} MMK
+                  </Text>
+                  <Text style={styles.summaryMeta}>
+                    {debtDetail.sales.length} credit sale
+                    {debtDetail.sales.length === 1 ? "" : "s"} ·{" "}
+                    {debtDetail.repayments.length} repayment
+                    {debtDetail.repayments.length === 1 ? "" : "s"}
+                  </Text>
+                </View>
+
+                <Text style={styles.sectionTitle}>Credit sales</Text>
+                {debtDetail.sales.length ? (
+                  debtDetail.sales.map((sale) => (
+                    <View key={sale.id} style={styles.historyItem}>
+                      <View style={styles.historyRow}>
+                        <Text style={styles.historyTitle}>Sale #{sale.id}</Text>
+                        <Text style={styles.historyAmount}>
+                          {sale.remaining_amount.toLocaleString()} MMK
+                        </Text>
+                      </View>
+                      <Text style={styles.historyMeta}>
+                        {new Date(sale.created_at).toLocaleString([], {
+                          dateStyle: "medium",
+                          timeStyle: "short",
+                        })}
+                      </Text>
+                      <Text style={styles.historyMeta}>
+                        Sale total: {sale.total_amount.toLocaleString()} MMK ·
+                        Paid now: {sale.cash_received.toLocaleString()} MMK
+                      </Text>
+                      {sale.debt_note ? (
+                        <Text style={styles.historyNote}>{sale.debt_note}</Text>
+                      ) : null}
+                    </View>
+                  ))
+                ) : (
+                  <Text style={styles.emptyText}>
+                    No credit sales recorded.
+                  </Text>
+                )}
+
+                <Text style={styles.sectionTitle}>Repayments</Text>
+                {debtDetail.repayments.length ? (
+                  debtDetail.repayments.map((repaymentItem) => (
+                    <View key={repaymentItem.id} style={styles.historyItem}>
+                      <View style={styles.historyRow}>
+                        <Text style={styles.historyTitle}>
+                          Payment #{repaymentItem.id}
+                        </Text>
+                        <Text style={styles.historyAmountPositive}>
+                          +{repaymentItem.amount_paid.toLocaleString()} MMK
+                        </Text>
+                      </View>
+                      <Text style={styles.historyMeta}>
+                        {new Date(repaymentItem.created_at).toLocaleString([], {
+                          dateStyle: "medium",
+                          timeStyle: "short",
+                        })}
+                      </Text>
+                    </View>
+                  ))
+                ) : (
+                  <Text style={styles.emptyText}>No repayments yet.</Text>
+                )}
+
+                <Pressable
+                  style={styles.addButton}
+                  onPress={() => {
+                    setShowDebtDetail(false);
+                    setSelectedCustomer({
+                      id: debtDetail.customer_id,
+                      name: debtDetail.name,
+                      phone: debtDetail.phone,
+                      total_debt: debtDetail.total_debt,
+                    });
+                    setShowRepayment(true);
+                  }}>
+                  <MaterialCommunityIcons
+                    name="cash-check"
+                    size={17}
+                    color="#fff"
+                  />
+                  <Text style={styles.addButtonText}>Record payment</Text>
+                </Pressable>
+              </>
+            ) : (
+              <Text style={styles.emptyText}>No debt details available.</Text>
+            )}
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
         visible={showRepayment}
         transparent
         animationType="fade"
@@ -250,10 +484,17 @@ export default function CustomersScreen({ navigation }: Props) {
         visible={showNewCustomer}
         transparent
         animationType="fade"
-        onRequestClose={() => setShowNewCustomer(false)}>
+        onRequestClose={() => {
+          setShowNewCustomer(false);
+          setEditingCustomerId(null);
+          setName("");
+          setPhone("");
+        }}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Add customer</Text>
+            <Text style={styles.modalTitle}>
+              {editingCustomerId !== null ? "Edit customer" : "Add customer"}
+            </Text>
             <TextInput
               value={name}
               onChangeText={setName}
@@ -272,11 +513,20 @@ export default function CustomersScreen({ navigation }: Props) {
             <Pressable
               style={styles.addButton}
               onPress={() => void saveCustomer()}>
-              <Text style={styles.addButtonText}>Save customer</Text>
+              <Text style={styles.addButtonText}>
+                {editingCustomerId !== null
+                  ? "Update customer"
+                  : "Save customer"}
+              </Text>
             </Pressable>
             <Pressable
               style={styles.cancelButton}
-              onPress={() => setShowNewCustomer(false)}>
+              onPress={() => {
+                setShowNewCustomer(false);
+                setEditingCustomerId(null);
+                setName("");
+                setPhone("");
+              }}>
               <Text style={styles.cancelText}>Cancel</Text>
             </Pressable>
           </View>
@@ -359,22 +609,71 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 14,
     marginBottom: 10,
+  },
+  cardHeader: {
     flexDirection: "row",
+    justifyContent: "flex-end",
     alignItems: "center",
+    gap: 8,
+    marginBottom: 6,
+  },
+  editIconButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: "#fffaf0",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#f0dfb6",
+  },
+  deleteIconButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: "#fffaf0",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#f0dfb6",
   },
   cardInfo: { flex: 1 },
+  actionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 8,
+    marginTop: 12,
+  },
+  inlineButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: "#fffaf0",
+    borderWidth: 1,
+    borderColor: "#f0dfb6",
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 8,
+    flex: 1,
+    justifyContent: "center",
+  },
+  inlineButtonText: { color: "#3a2818", fontWeight: "700", fontSize: 12 },
   name: { color: "#3a2818", fontSize: 16, fontWeight: "800" },
   phone: { color: "#71837a", fontSize: 12, marginTop: 3 },
   debt: { color: "#bd6337", fontSize: 13, fontWeight: "800", marginTop: 8 },
   paid: { color: "#4c8b68" },
   repayButton: {
     backgroundColor: "#f36f0a",
-    borderRadius: 7,
+    borderRadius: 8,
     paddingHorizontal: 10,
-    paddingVertical: 9,
+    paddingVertical: 12,
     flexDirection: "row",
     alignItems: "center",
-    gap: 5,
+    justifyContent: "center",
+    gap: 6,
+    marginTop: 12,
+    width: "100%",
   },
   disabledButton: { backgroundColor: "#bdc9c2" },
   repayText: { color: "#fff", fontWeight: "800", fontSize: 12 },
@@ -397,6 +696,26 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   modalContent: { backgroundColor: "#fff", borderRadius: 14, padding: 18 },
+  detailModalContent: {
+    backgroundColor: "#fff",
+    borderRadius: 14,
+    padding: 18,
+    maxHeight: "85%",
+  },
+  detailHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  closeIconButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: "#fffaf0",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   modalTitle: {
     color: "#3a2818",
     fontSize: 20,
@@ -404,6 +723,51 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   modalSubtext: { color: "#71837a", fontSize: 13, marginBottom: 12 },
+  detailSummaryCard: {
+    backgroundColor: "#fffaf0",
+    borderWidth: 1,
+    borderColor: "#f0dfb6",
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 12,
+  },
+  detailSummaryValue: {
+    color: "#bd6337",
+    fontSize: 22,
+    fontWeight: "900",
+  },
+  summaryMeta: { color: "#71837a", fontSize: 12, marginTop: 4 },
+  sectionTitle: {
+    color: "#3a2818",
+    fontSize: 13,
+    fontWeight: "800",
+    marginTop: 8,
+    marginBottom: 6,
+    textTransform: "uppercase",
+  },
+  historyItem: {
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#f0dfb6",
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 8,
+  },
+  historyRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  historyTitle: { color: "#3a2818", fontSize: 13, fontWeight: "800" },
+  historyAmount: { color: "#bd6337", fontSize: 13, fontWeight: "800" },
+  historyAmountPositive: { color: "#4c8b68", fontSize: 13, fontWeight: "800" },
+  historyMeta: { color: "#71837a", fontSize: 12, marginTop: 4 },
+  historyNote: {
+    color: "#7a6a52",
+    fontSize: 12,
+    marginTop: 6,
+    fontStyle: "italic",
+  },
   input: {
     backgroundColor: "#fffaf0",
     borderColor: "#f0dfb6",

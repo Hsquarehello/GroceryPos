@@ -1,4 +1,4 @@
-import { Alert, Platform } from "react-native";
+import { Platform } from "react-native";
 import * as Application from "expo-application";
 import * as FileSystem from "expo-file-system/legacy";
 import * as IntentLauncher from "expo-intent-launcher";
@@ -6,10 +6,12 @@ import * as IntentLauncher from "expo-intent-launcher";
 const VERSION_MANIFEST_URL =
   "https://gist.githubusercontent.com/Hsquarehello/19417c2c80a03040bde0e91b37cbfb9a/raw/version.json";
 
-type VersionManifest = {
+export type UpdateInfo = {
   latestVersion: string;
   apkUrl: string;
   forceUpdate: boolean;
+  releaseNotes: string[];
+  sizeMb?: number;
 };
 
 function isNewerVersion(latestVersion: string, currentVersion: string) {
@@ -28,53 +30,72 @@ function isNewerVersion(latestVersion: string, currentVersion: string) {
   return false;
 }
 
-async function downloadAndInstall(apkUrl: string) {
+export async function downloadAndInstall(
+  apkUrl: string,
+  onProgress: (progress: number) => void,
+) {
   if (Platform.OS !== "android") {
-    return;
+    throw new Error("In-app APK updates are available on Android only.");
   }
 
-  try {
-    // 1. cacheDirectory သို့ ပြောင်းလဲထားပါသည် (Android FileProvider Compliant ဖြစ်စေရန်)
-    const fileUri = `${FileSystem.cacheDirectory}update.apk`;
+  const fileUri = `${FileSystem.cacheDirectory}update.apk`;
 
-    // ယခင်ရှိပြီးသား APK ဖိုင်အဟောင်းရှိရင် ဖျက်ပါမည်
-    const fileInfo = await FileSystem.getInfoAsync(fileUri);
-    if (fileInfo.exists) {
-      await FileSystem.deleteAsync(fileUri, { idempotent: true });
-    }
-
-    // 2. Download ဆွဲခြင်း
-    const downloadResult = await FileSystem.downloadAsync(apkUrl, fileUri);
-
-    if (downloadResult.status !== 200) {
-      throw new Error(`Download failed with status ${downloadResult.status}`);
-    }
-
-    // 3. Content URI ယူပြီး Installer ပွင့်စေခြင်း
-    const contentUri = await FileSystem.getContentUriAsync(downloadResult.uri);
-
-    await IntentLauncher.startActivityAsync("android.intent.action.VIEW", {
-      data: contentUri,
-      flags: 1, // FLAG_GRANT_READ_URI_PERMISSION
-      type: "application/vnd.android.package-archive",
-    });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    console.error("[Download/Install Error]:", error);
-    Alert.alert("Install Failed", `Could not install update: ${message}`);
+  const fileInfo = await FileSystem.getInfoAsync(fileUri);
+  if (fileInfo.exists) {
+    await FileSystem.deleteAsync(fileUri, { idempotent: true });
   }
+
+  const downloadTask = FileSystem.createDownloadResumable(
+    apkUrl,
+    fileUri,
+    {},
+    ({ totalBytesWritten, totalBytesExpectedToWrite }) => {
+      if (totalBytesExpectedToWrite > 0) {
+        onProgress(totalBytesWritten / totalBytesExpectedToWrite);
+      }
+    },
+  );
+  const downloadResult = await downloadTask.downloadAsync();
+
+  if (!downloadResult || downloadResult.status !== 200) {
+    throw new Error(
+      `Download failed with status ${downloadResult?.status ?? "unknown"}`,
+    );
+  }
+
+  onProgress(1);
+  const contentUri = await FileSystem.getContentUriAsync(downloadResult.uri);
+
+  await IntentLauncher.startActivityAsync("android.intent.action.VIEW", {
+    data: contentUri,
+    flags: 1,
+    type: "application/vnd.android.package-archive",
+  });
 }
 
-export default async function checkVersion() {
+export default async function checkVersion(): Promise<UpdateInfo | null> {
+  if (Platform.OS !== "android") {
+    return null;
+  }
+
   try {
     const currentVersion = Application.nativeApplicationVersion || "1.0.0";
     const response = await fetch(`${VERSION_MANIFEST_URL}?t=${Date.now()}`);
 
     if (!response.ok) {
-      throw new Error(`Could not check for updates (Status: ${response.status})`);
+      throw new Error(
+        `Could not check for updates (Status: ${response.status})`,
+      );
     }
 
-    const manifest = (await response.json()) as VersionManifest;
+    const rawManifest = (await response.json()) as Partial<UpdateInfo>;
+    const manifest: UpdateInfo = {
+      latestVersion: rawManifest.latestVersion ?? "",
+      apkUrl: rawManifest.apkUrl ?? "",
+      forceUpdate: rawManifest.forceUpdate ?? false,
+      releaseNotes: rawManifest.releaseNotes ?? [],
+      sizeMb: rawManifest.sizeMb,
+    };
 
     console.log(
       `[Update Check] Current: ${currentVersion} | Latest: ${manifest.latestVersion}`,
@@ -85,31 +106,12 @@ export default async function checkVersion() {
       !manifest.apkUrl ||
       !isNewerVersion(manifest.latestVersion, currentVersion)
     ) {
-      return;
+      return null;
     }
 
-    const updateAction = () => {
-      // Download မစမီ Alert ပြပြီးမှ နောက်ကွယ်မှ ဒေါင်းလုဒ်စမည်
-      Alert.alert(
-        "Downloading Update",
-        "The update is downloading in the background. The installer will launch automatically.",
-        [{ text: "OK" }],
-      );
-      downloadAndInstall(manifest.apkUrl);
-    };
-
-    Alert.alert(
-      `GroceryPOS ${manifest.latestVersion} is available`,
-      "Update now to get the latest features and fixes.",
-      manifest.forceUpdate
-        ? [{ text: "Update now", onPress: updateAction }]
-        : [
-            { text: "Later", style: "cancel" },
-            { text: "Update now", onPress: updateAction },
-          ],
-      { cancelable: !manifest.forceUpdate }, // Force Update အခြေအနေတွင် Alert ကို အပြင်နှိပ်ပြီး ပိတ်၍မရအောင် တားဆီးသည်
-    );
+    return manifest;
   } catch (error) {
     console.log("[In-App Update Error]:", error);
+    return null;
   }
 }
