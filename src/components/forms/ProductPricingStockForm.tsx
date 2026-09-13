@@ -38,6 +38,25 @@ export function ProductPricingStockForm({
   onTargetPackageQtyChange,
   onInitialPackageQtyChange,
 }: Props) {
+  if (editing) {
+    return (
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>{t("pricingStock")}</Text>
+        <Text style={styles.label}>
+          {t("sellingPricePer", { unit: selectedUnit })}
+        </Text>
+        <TextInput
+          style={styles.input}
+          value={String(sellingPrice || "")}
+          onChangeText={(val) => onUpdateField("selling_price", val)}
+          keyboardType="decimal-pad"
+          placeholder="0.00"
+          placeholderTextColor="#8a9b95"
+        />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.card}>
       <Text style={styles.cardTitle}>{t("pricingStock")}</Text>

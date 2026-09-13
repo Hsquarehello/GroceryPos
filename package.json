@@ -1,6 +1,6 @@
 {
   "name": "grocerypos",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "main": "index.ts",
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
@@ -9,7 +9,7 @@
     "@react-navigation/native-stack": "^7.18.9",
     "expo": "~57.0.21",
     "expo-application": "~57.0.2",
-    "expo-camera": "~57.0.4",
+    "expo-camera": "~57.0.5",
     "expo-file-system": "~57.0.6",
     "expo-intent-launcher": "~57.0.1",
     "expo-splash-screen": "~57.0.8",

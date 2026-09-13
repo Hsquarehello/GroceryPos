@@ -16,8 +16,7 @@ import {
   getBaseProducts,
   getProductById,
   ProductInput,
-  updatePackageStock,
-  updateProduct,
+  updateProductDetails,
 } from "../database/productRepository";
 import { Product } from "../types";
 
@@ -55,7 +54,8 @@ const blankForm: ProductInput = {
 export default function AddProductScreen({ navigation, route }: Props) {
   const editing = route.name === "EditProduct";
   const params = route.params as
-    { productId?: number; barcode?: string } | undefined;
+    | { productId?: number; barcode?: string }
+    | undefined;
 
   const productId = editing ? params?.productId : undefined;
   const initialBarcode = params?.barcode;
@@ -181,10 +181,11 @@ export default function AddProductScreen({ navigation, route }: Props) {
     setSaving(true);
     try {
       if (editing && productId !== undefined) {
-        await updateProduct(productId, form);
-        if (!form.is_base_unit && targetPackageQty !== calculatedPackageStock) {
-          await updatePackageStock(form, targetPackageQty);
-        }
+        await updateProductDetails(productId, {
+          name: form.name,
+          barcode: form.barcode,
+          selling_price: form.selling_price,
+        });
       } else {
         const newId = await createProduct(form);
         if (!form.is_base_unit && initialPackageQty > 0) {
@@ -227,36 +228,39 @@ export default function AddProductScreen({ navigation, route }: Props) {
           }
         />
 
-        {/* 2. Unit & Packaging Config */}
-        <ProductUnitConfigForm
-          unitCategory={unitCategory}
-          selectedUnit={selectedUnit}
-          isBaseUnit={form.is_base_unit}
-          selectedParent={selectedParent}
-          conversionRate={form.conversion_rate}
-          onSelectUnitCategory={selectUnitCategory}
-          onOpenWeightPicker={() => setShowWeightPicker(true)}
-          onToggleBaseUnit={(isBase) => {
-            if (isBase) {
-              setForm((prev) => ({
-                ...prev,
-                is_base_unit: true,
-                parent_id: null,
-                conversion_rate: 1,
-              }));
-            } else {
-              setUnitCategory("unit");
-              setSelectedUnit("pcs");
-              setForm((prev) => ({
-                ...prev,
-                is_base_unit: false,
-                selling_unit: "unit",
-              }));
+        {!editing && (
+          <ProductUnitConfigForm
+            unitCategory={unitCategory}
+            selectedUnit={selectedUnit}
+            isBaseUnit={form.is_base_unit}
+            selectedParent={selectedParent}
+            conversionRate={form.conversion_rate}
+            onSelectUnitCategory={selectUnitCategory}
+            onOpenWeightPicker={() => setShowWeightPicker(true)}
+            onToggleBaseUnit={(isBase) => {
+              if (isBase) {
+                setForm((prev) => ({
+                  ...prev,
+                  is_base_unit: true,
+                  parent_id: null,
+                  conversion_rate: 1,
+                }));
+              } else {
+                setUnitCategory("unit");
+                setSelectedUnit("pcs");
+                setForm((prev) => ({
+                  ...prev,
+                  is_base_unit: false,
+                  selling_unit: "unit",
+                }));
+              }
+            }}
+            onOpenParentPicker={() => setShowPicker(true)}
+            onUpdateConversionRate={(val) =>
+              updateField("conversion_rate", val)
             }
-          }}
-          onOpenParentPicker={() => setShowPicker(true)}
-          onUpdateConversionRate={(val) => updateField("conversion_rate", val)}
-        />
+          />
+        )}
 
         {/* 3. Pricing & Stock */}
         <ProductPricingStockForm

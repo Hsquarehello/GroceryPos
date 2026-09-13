@@ -16,6 +16,8 @@ import ReportsScreen from "./src/screens/ReportsScreen";
 import CustomersScreen from "./src/screens/CustomersScreen";
 import TransactionsScreen from "./src/screens/TransactionsScreen";
 import QuantitySoldScreen from "./src/screens/QuantitySoldScreen";
+import RestockScreen from "./src/screens/RestockScreen";
+import PurchaseBatchHistoryScreen from "./src/screens/PurchaseBatchHistoryScreen";
 import { t } from "./src/i18n";
 
 export type RootStackParamList = {
@@ -30,6 +32,8 @@ export type RootStackParamList = {
     | undefined;
   QuantitySold: { startDate?: string; endDate?: string } | undefined;
   Customers: undefined;
+  Restock: undefined;
+  PurchaseBatchHistory: undefined;
 };
 
 SplashScreen.preventAutoHideAsync();
@@ -128,6 +132,16 @@ export default function App() {
           name="Customers"
           component={CustomersScreen}
           options={{ title: t("customers") }}
+        />
+        <Stack.Screen
+          name="Restock"
+          component={RestockScreen}
+          options={{ title: t("restockTitle") }}
+        />
+        <Stack.Screen
+          name="PurchaseBatchHistory"
+          component={PurchaseBatchHistoryScreen}
+          options={{ title: t("purchaseBatchHistory") }}
         />
       </Stack.Navigator>
       <UpdateModal

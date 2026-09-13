@@ -103,19 +103,69 @@ export async function completeSale(
         ? item.quantity
         : item.quantity * item.conversion_rate;
 
-      const stockUpdate = await transaction.runAsync(
-        "UPDATE products SET stock_qty = stock_qty - ? WHERE id = ? AND stock_qty >= ?",
-        [baseUnitsToDeduct, baseProductId, baseUnitsToDeduct],
+      const batches = await transaction.getAllAsync<{
+        id: number;
+        remaining_qty: number;
+        cost_price: number;
+      }>(
+        "SELECT id, remaining_qty, cost_price FROM product_batches WHERE product_id = ? AND remaining_qty > 0 ORDER BY received_at ASC, id ASC",
+        [baseProductId],
       );
+      let remainingToDeduct = baseUnitsToDeduct;
+      let totalCost = 0;
+      const allocations: Array<{
+        batchId: number;
+        quantity: number;
+        unitCost: number;
+      }> = [];
 
-      if (stockUpdate.changes !== 1) {
+      for (const batch of batches) {
+        if (remainingToDeduct <= 0) break;
+        const quantity = Math.min(batch.remaining_qty, remainingToDeduct);
+        await transaction.runAsync(
+          "UPDATE product_batches SET remaining_qty = remaining_qty - ? WHERE id = ? AND remaining_qty >= ?",
+          [quantity, batch.id, quantity],
+        );
+        allocations.push({
+          batchId: batch.id,
+          quantity,
+          unitCost: batch.cost_price,
+        });
+        totalCost += quantity * batch.cost_price;
+        remainingToDeduct -= quantity;
+      }
+
+      if (remainingToDeduct > 0) {
         throw new Error(`"${item.name}" အတွက် လက်ကျန် Stock မလုံလောက်ပါ။`);
       }
 
       await transaction.runAsync(
-        "INSERT INTO sale_items (sale_id, product_id, quantity, unit_price, unit_cost) VALUES (?, ?, ?, ?, ?)",
-        [saleId, item.id!, item.quantity, item.selling_price, item.cost_price],
+        "UPDATE products SET stock_qty = stock_qty - ? WHERE id = ?",
+        [baseUnitsToDeduct, baseProductId],
       );
+
+      const saleItem = await transaction.runAsync(
+        "INSERT INTO sale_items (sale_id, product_id, quantity, unit_price, unit_cost) VALUES (?, ?, ?, ?, ?)",
+        [
+          saleId,
+          item.id!,
+          item.quantity,
+          item.selling_price,
+          totalCost / item.quantity,
+        ],
+      );
+
+      for (const allocation of allocations) {
+        await transaction.runAsync(
+          "INSERT INTO sale_item_batches (sale_item_id, batch_id, quantity, unit_cost) VALUES (?, ?, ?, ?)",
+          [
+            saleItem.lastInsertRowId,
+            allocation.batchId,
+            allocation.quantity,
+            allocation.unitCost,
+          ],
+        );
+      }
     }
   });
 
@@ -149,13 +199,55 @@ export async function refundTransaction(transactionId: number): Promise<void> {
       throw new Error("Sale is already refunded.");
 
     const items = await transaction.getAllAsync<{
+      id: number;
       product_id: number;
       quantity: number;
-    }>("SELECT product_id, quantity FROM sale_items WHERE sale_id = ?", [
+    }>("SELECT id, product_id, quantity FROM sale_items WHERE sale_id = ?", [
       transactionId,
     ]);
 
     for (const item of items) {
+      const allocations = await transaction.getAllAsync<{
+        batch_id: number;
+        quantity: number;
+      }>(
+        "SELECT batch_id, quantity FROM sale_item_batches WHERE sale_item_id = ?",
+        [item.id],
+      );
+
+      if (allocations.length > 0) {
+        const restoredQty = allocations.reduce(
+          (total, allocation) => total + allocation.quantity,
+          0,
+        );
+        for (const allocation of allocations) {
+          await transaction.runAsync(
+            "UPDATE product_batches SET remaining_qty = remaining_qty + ? WHERE id = ?",
+            [allocation.quantity, allocation.batch_id],
+          );
+        }
+        const product = await transaction.getFirstAsync<{
+          id: number;
+        }>("SELECT id FROM products WHERE id = ?", [item.product_id]);
+        const baseProduct = await transaction.getFirstAsync<StockProduct>(
+          "SELECT parent_id, conversion_rate, is_base_unit FROM products WHERE id = ?",
+          [item.product_id],
+        );
+        if (!product || !baseProduct) {
+          throw new Error("A product from this sale no longer exists.");
+        }
+        const baseProductId = baseProduct.is_base_unit
+          ? item.product_id
+          : baseProduct.parent_id;
+        if (!baseProductId)
+          throw new Error("A package product has no base product.");
+        await transaction.runAsync(
+          "UPDATE products SET stock_qty = stock_qty + ? WHERE id = ?",
+          [restoredQty, baseProductId],
+        );
+        continue;
+      }
+
       const product = await transaction.getFirstAsync<StockProduct>(
         "SELECT parent_id, conversion_rate, is_base_unit FROM products WHERE id = ?",
         [item.product_id],

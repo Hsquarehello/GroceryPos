@@ -153,6 +153,12 @@ export default function HomeScreen({ navigation }: Props) {
         <MaterialCommunityIcons name="plus" size={22} color="#fff" />
         <Text style={styles.fabText}>{t("addProduct")}</Text>
       </Pressable>
+      <Pressable
+        style={styles.restockFab}
+        onPress={() => navigation.navigate("Restock")}>
+        <MaterialCommunityIcons name="package-down" size={22} color="#fff" />
+        <Text style={styles.fabText}>{t("restock")}</Text>
+      </Pressable>
 
       {/* Navigation Bar */}
       <BottomNavBar
@@ -194,4 +200,17 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   fabText: { color: "#fff", fontWeight: "800" },
+  restockFab: {
+    position: "absolute",
+    right: 20,
+    bottom: 136,
+    backgroundColor: "#3a2818",
+    borderRadius: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 13,
+    gap: 7,
+    elevation: 3,
+  },
 });
