@@ -1,6 +1,7 @@
 import React from "react";
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { t } from "../../i18n";
 
 export type SortBy = "quantity" | "revenue";
 export type SortDirection = "asc" | "desc";
@@ -33,18 +34,18 @@ export function SortModal({
           style={styles.sortMenu}
           onPress={(event) => event.stopPropagation()}>
           <View style={styles.sortMenuHeader}>
-            <Text style={styles.sortMenuTitle}>Sort quantity sold</Text>
+            <Text style={styles.sortMenuTitle}>{t("sortQuantitySold")}</Text>
             <Pressable onPress={onClose}>
               <MaterialCommunityIcons name="close" size={21} color="#7a6a52" />
             </Pressable>
           </View>
 
-          <Text style={styles.sortMenuLabel}>Field</Text>
+          <Text style={styles.sortMenuLabel}>{t("field")}</Text>
           <View style={styles.sortChoices}>
             {(
               [
-                ["quantity", "Quantity"],
-                ["revenue", "Revenue"],
+                ["quantity", t("quantity")],
+                ["revenue", t("revenue")],
               ] as const
             ).map(([value, label]) => (
               <Pressable
@@ -65,12 +66,12 @@ export function SortModal({
             ))}
           </View>
 
-          <Text style={styles.sortMenuLabel}>Order</Text>
+          <Text style={styles.sortMenuLabel}>{t("order")}</Text>
           <View style={styles.sortChoices}>
             {(
               [
-                ["asc", "Ascending"],
-                ["desc", "Descending"],
+                ["asc", t("ascending")],
+                ["desc", t("descending")],
               ] as const
             ).map(([value, label]) => (
               <Pressable
@@ -92,7 +93,7 @@ export function SortModal({
           </View>
 
           <Pressable style={styles.applySortButton} onPress={onClose}>
-            <Text style={styles.applySortText}>Apply sorting</Text>
+            <Text style={styles.applySortText}>{t("applySorting")}</Text>
           </Pressable>
         </Pressable>
       </Pressable>

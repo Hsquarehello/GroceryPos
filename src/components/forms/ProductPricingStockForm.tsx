@@ -2,6 +2,7 @@ import React from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 import { Product } from "../../types";
 import { SelectedUnit } from "../modals/WeightUnitPickerModal";
+import { t } from "../../i18n";
 
 interface Props {
   costPrice: number;
@@ -39,10 +40,12 @@ export function ProductPricingStockForm({
 }: Props) {
   return (
     <View style={styles.card}>
-      <Text style={styles.cardTitle}>Pricing & Stock</Text>
+      <Text style={styles.cardTitle}>{t("pricingStock")}</Text>
       <View style={styles.row}>
         <View style={styles.col}>
-          <Text style={styles.label}>Cost Price per {selectedUnit}</Text>
+          <Text style={styles.label}>
+            {t("costPricePer", { unit: selectedUnit })}
+          </Text>
           <TextInput
             style={styles.input}
             value={String(costPrice || "")}
@@ -53,7 +56,9 @@ export function ProductPricingStockForm({
           />
         </View>
         <View style={styles.col}>
-          <Text style={styles.label}>Selling Price per {selectedUnit}</Text>
+          <Text style={styles.label}>
+            {t("sellingPricePer", { unit: selectedUnit })}
+          </Text>
           <TextInput
             style={styles.input}
             value={String(sellingPrice || "")}
@@ -67,7 +72,9 @@ export function ProductPricingStockForm({
 
       {isBaseUnit ? (
         <>
-          <Text style={styles.label}>Available Stock ({selectedUnit})</Text>
+          <Text style={styles.label}>
+            {t("availableStock", { unit: selectedUnit })}
+          </Text>
           <TextInput
             style={styles.input}
             value={String(stockQty || "")}
@@ -79,7 +86,7 @@ export function ProductPricingStockForm({
         </>
       ) : editing ? (
         <View style={styles.packageStockBox}>
-          <Text style={styles.label}>Available Package Stock Qty</Text>
+          <Text style={styles.label}>{t("availablePackageStock")}</Text>
           <TextInput
             style={styles.input}
             value={String(targetPackageQty)}
@@ -97,7 +104,7 @@ export function ProductPricingStockForm({
         </View>
       ) : (
         <>
-          <Text style={styles.label}>Initial Packages To Add To Stock</Text>
+          <Text style={styles.label}>{t("initialPackages")}</Text>
           <TextInput
             style={styles.input}
             value={String(initialPackageQty || "")}

@@ -24,6 +24,7 @@ import {
   Preset,
   ReportPresetFilter,
 } from "../components/layout/ReportPresetFilter";
+import { t } from "../i18n";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Reports">;
 
@@ -64,7 +65,7 @@ export default function ReportsScreen({ navigation }: Props) {
     try {
       setReport(await getDateRangeReport(startDate, endDate));
     } catch {
-      Alert.alert("Error", "Could not load the selected report.");
+      Alert.alert(t("error"), t("couldNotLoadReport"));
     } finally {
       setRefreshing(false);
     }
@@ -116,8 +117,8 @@ export default function ReportsScreen({ navigation }: Props) {
       }>
       <View style={styles.headerRow}>
         <View>
-          <Text style={styles.eyebrow}>REPORTS</Text>
-          <Text style={styles.heading}>Sales report</Text>
+          <Text style={styles.eyebrow}>{t("reportsEyebrow")}</Text>
+          <Text style={styles.heading}>{t("salesReport")}</Text>
         </View>
         <Pressable
           style={styles.backButton}
@@ -133,13 +134,13 @@ export default function ReportsScreen({ navigation }: Props) {
 
       <View style={styles.dateRange}>
         <DateButton
-          label="FROM"
+          label={t("from")}
           date={startDate}
           onPress={() => setPickerTarget("start")}
         />
         <MaterialCommunityIcons name="arrow-right" size={18} color="#8a7658" />
         <DateButton
-          label="TO"
+          label={t("to")}
           date={endDate}
           onPress={() => setPickerTarget("end")}
         />
@@ -156,44 +157,42 @@ export default function ReportsScreen({ navigation }: Props) {
       )}
 
       <View style={styles.hero}>
-        <Text style={styles.heroLabel}>NET COLLECTED</Text>
+        <Text style={styles.heroLabel}>{t("netCollected")}</Text>
         <Text style={styles.heroValue}>
           {formatMoney(report.net_collected)}
         </Text>
-        <Text style={styles.heroSubtext}>
-          Actual money received from selected sales, excluding change
-        </Text>
+        <Text style={styles.heroSubtext}>{t("actualMoney")}</Text>
       </View>
 
       <View style={styles.grid}>
         <MetricCard
-          label="Net profit"
+          label={t("netProfit")}
           value={formatMoney(report.profit)}
           icon="chart-line"
           valueColor={report.profit < 0 ? "#c0392b" : undefined}
         />
         <MetricCard
-          label="Revenue"
+          label={t("revenue")}
           value={formatMoney(report.revenue)}
           icon="cash-register"
         />
         <MetricCard
-          label="COGS"
+          label={t("cogs")}
           value={formatMoney(report.cogs)}
           icon="cart-minus"
         />
         <MetricCard
-          label="Discount given"
+          label={t("discountGiven")}
           value={formatMoney(report.discount_total)}
           icon="sale-outline"
         />
         <MetricCard
-          label="Credit outstanding"
+          label={t("creditOutstanding")}
           value={formatMoney(report.credit_outstanding)}
           icon="account-clock-outline"
         />
         <MetricCard
-          label="Transactions"
+          label={t("transactionCount")}
           value={report.transaction_count.toLocaleString()}
           icon="receipt-text-outline"
           onPress={() =>
@@ -204,9 +203,13 @@ export default function ReportsScreen({ navigation }: Props) {
           }
         />
         <MetricCard
-          label="Quantity sold"
-          value={`${report.total_items.toLocaleString()} items`}
-          secondaryValue={`${report.total_weight_tcl.toFixed(2)} tcl`}
+          label={t("quantitySoldMetric")}
+          value={t("itemMetric", {
+            count: report.total_items.toLocaleString(),
+          })}
+          secondaryValue={t("weightMetric", {
+            amount: report.total_weight_tcl.toFixed(2),
+          })}
           icon="scale-balance"
           onPress={() =>
             navigation.navigate("QuantitySold", {
@@ -223,9 +226,7 @@ export default function ReportsScreen({ navigation }: Props) {
           size={18}
           color="#7a6a52"
         />
-        <Text style={styles.noteText}>
-          Profit uses the cost price saved when each sale was completed.
-        </Text>
+        <Text style={styles.noteText}>{t("profitNote")}</Text>
       </View>
     </ScrollView>
   );

@@ -27,6 +27,7 @@ import { CustomerCard } from "../components/cards/CustomerCard";
 import { CustomerFormModal } from "../components/modals/CustomerFormModal";
 import { RepaymentModal } from "../components/modals/RepaymentModal";
 import { DebtDetailModal } from "../components/modals/DebtDetailModal";
+import { t } from "../i18n";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Customers">;
 
@@ -54,7 +55,7 @@ export default function CustomersScreen({ navigation }: Props) {
     try {
       setCustomers(await getCustomers());
     } catch {
-      Alert.alert("Error", "Could not load customers.");
+      Alert.alert(t("error"), t("couldNotLoadCustomers"));
     } finally {
       setRefreshing(false);
     }
@@ -78,9 +79,9 @@ export default function CustomersScreen({ navigation }: Props) {
     } catch (error) {
       Alert.alert(
         editingCustomerId !== null
-          ? "Could not update customer"
-          : "Could not add customer",
-        error instanceof Error ? error.message : "Please try again.",
+          ? t("couldNotUpdateCustomer")
+          : t("couldNotAddCustomer"),
+        error instanceof Error ? error.message : t("tryAgain"),
       );
     }
   };
@@ -197,8 +198,8 @@ export default function CustomersScreen({ navigation }: Props) {
         }>
         <View style={styles.headerRow}>
           <View>
-            <Text style={styles.eyebrow}>ACCOUNTS RECEIVABLE</Text>
-            <Text style={styles.heading}>Customers</Text>
+            <Text style={styles.eyebrow}>{t("accountsReceivable")}</Text>
+            <Text style={styles.heading}>{t("customers")}</Text>
           </View>
           <Pressable
             style={styles.backButton}
@@ -213,13 +214,16 @@ export default function CustomersScreen({ navigation }: Props) {
 
         <View style={styles.summary}>
           <View>
-            <Text style={styles.summaryLabel}>Total outstanding</Text>
+            <Text style={styles.summaryLabel}>{t("totalOutstanding")}</Text>
             <Text style={styles.summaryValue}>
               {totalDebt.toLocaleString()} MMK
             </Text>
           </View>
           <Text style={styles.customerCount}>
-            {visibleCustomers.length} of {customers.length} customers
+            {t("customerCount", {
+              visible: visibleCustomers.length,
+              total: customers.length,
+            })}
           </Text>
         </View>
 
@@ -229,7 +233,7 @@ export default function CustomersScreen({ navigation }: Props) {
             value={search}
             onChangeText={setSearch}
             style={styles.searchInput}
-            placeholder="Search by name or phone"
+            placeholder={t("searchCustomer")}
             placeholderTextColor="#9aaa9f"
             autoCapitalize="none"
             returnKeyType="search"
@@ -238,7 +242,7 @@ export default function CustomersScreen({ navigation }: Props) {
             <Pressable
               style={styles.clearSearch}
               onPress={() => setSearch("")}
-              accessibilityLabel="Clear customer search">
+              accessibilityLabel={t("clearSearch")}>
               <MaterialCommunityIcons
                 name="close-circle"
                 size={19}
@@ -256,7 +260,7 @@ export default function CustomersScreen({ navigation }: Props) {
             size={20}
             color="#fff"
           />
-          <Text style={styles.addButtonText}>Add customer</Text>
+          <Text style={styles.addButtonText}>{t("addCustomer")}</Text>
         </Pressable>
 
         {visibleCustomers.map((customer) => (
@@ -274,10 +278,10 @@ export default function CustomersScreen({ navigation }: Props) {
         ))}
 
         {!customers.length && (
-          <Text style={styles.emptyText}>No customers yet.</Text>
+          <Text style={styles.emptyText}>{t("noCustomers")}</Text>
         )}
         {!!customers.length && !visibleCustomers.length && (
-          <Text style={styles.emptyText}>No matching customers.</Text>
+          <Text style={styles.emptyText}>{t("noMatchingCustomers")}</Text>
         )}
       </ScrollView>
 

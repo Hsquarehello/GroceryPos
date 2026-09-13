@@ -20,6 +20,7 @@ import {
 } from "../database";
 import { TransactionRow } from "../components/rows/TransactionRow";
 import { TransactionDetailModal } from "../components/modals/TransactionDetailModal";
+import { t } from "../i18n";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Transactions">;
 
@@ -64,7 +65,7 @@ export default function TransactionsScreen({ navigation, route }: Props) {
         setHasMore(result.hasMore);
         setPage(targetPage);
       } catch {
-        Alert.alert("Error", "Could not load the selected transactions.");
+        Alert.alert(t("error"), t("couldNotLoadTransactions"));
       } finally {
         setRefreshing(false);
       }
@@ -84,7 +85,7 @@ export default function TransactionsScreen({ navigation, route }: Props) {
       const detail = await getTransactionDetail(transactionId);
       setSelectedTransaction(detail);
     } catch {
-      Alert.alert("Error", "Could not load transaction details.");
+      Alert.alert(t("error"), t("couldNotLoadTransactionDetail"));
     } finally {
       setLoadingDetail(false);
     }
@@ -114,10 +115,10 @@ export default function TransactionsScreen({ navigation, route }: Props) {
             <View>
               <Text style={styles.eyebrow}>
                 {startDate.toDateString() === endDate.toDateString()
-                  ? "SELECTED DATE"
-                  : "DATE RANGE"}
+                  ? t("selectedDate")
+                  : t("dateRange")}
               </Text>
-              <Text style={styles.heading}>Transactions</Text>
+              <Text style={styles.heading}>{t("transactions")}</Text>
             </View>
             <Pressable
               style={styles.backButton}
@@ -138,10 +139,8 @@ export default function TransactionsScreen({ navigation, route }: Props) {
                 size={48}
                 color="#ead8ae"
               />
-              <Text style={styles.emptyTitle}>No transactions today</Text>
-              <Text style={styles.emptyText}>
-                Completed sales will appear here.
-              </Text>
+              <Text style={styles.emptyTitle}>{t("noTransactionsToday")}</Text>
+              <Text style={styles.emptyText}>{t("completedSalesHere")}</Text>
             </View>
           ) : null
         }
@@ -168,10 +167,12 @@ export default function TransactionsScreen({ navigation, route }: Props) {
                     styles.pageButtonText,
                     page === 0 && styles.disabledText,
                   ]}>
-                  Previous
+                  {t("previous")}
                 </Text>
               </Pressable>
-              <Text style={styles.pageText}>Page {page + 1}</Text>
+              <Text style={styles.pageText}>
+                {t("page", { count: page + 1 })}
+              </Text>
               <Pressable
                 style={[styles.pageButton, !hasMore && styles.disabledButton]}
                 onPress={() => loadTransactions(page + 1)}
@@ -181,7 +182,7 @@ export default function TransactionsScreen({ navigation, route }: Props) {
                     styles.pageButtonText,
                     !hasMore && styles.disabledText,
                   ]}>
-                  Next
+                  {t("next")}
                 </Text>
                 <MaterialCommunityIcons
                   name="chevron-right"

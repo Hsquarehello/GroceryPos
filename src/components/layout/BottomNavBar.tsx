@@ -1,6 +1,7 @@
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { t } from "../../i18n";
 
 interface BottomNavBarProps {
   activeRoute: string;
@@ -8,37 +9,39 @@ interface BottomNavBarProps {
   onNavigate: (routeName: any) => void;
 }
 
-export const BottomNavBar = React.memo(({ activeRoute, cartSize, onNavigate }: BottomNavBarProps) => {
-  return (
-    <View style={styles.navBar}>
-      <NavItem
-        icon="home-variant"
-        label="Home"
-        active={activeRoute === "Home"}
-        onPress={() => onNavigate("Home")}
-      />
-      <NavItem
-        icon="chart-line"
-        label="Reports"
-        active={activeRoute === "Reports"}
-        onPress={() => onNavigate("Reports")}
-      />
-      <NavItem
-        icon="account-cash-outline"
-        label="Debt"
-        active={activeRoute === "Customers"}
-        onPress={() => onNavigate("Customers")}
-      />
-      <NavItem
-        icon="cart-outline"
-        label="Cart"
-        active={activeRoute === "Cart"}
-        onPress={() => onNavigate("Cart")}
-        badge={cartSize}
-      />
-    </View>
-  );
-});
+export const BottomNavBar = React.memo(
+  ({ activeRoute, cartSize, onNavigate }: BottomNavBarProps) => {
+    return (
+      <View style={styles.navBar}>
+        <NavItem
+          icon="home-variant"
+          label={t("home")}
+          active={activeRoute === "Home"}
+          onPress={() => onNavigate("Home")}
+        />
+        <NavItem
+          icon="chart-line"
+          label={t("reports")}
+          active={activeRoute === "Reports"}
+          onPress={() => onNavigate("Reports")}
+        />
+        <NavItem
+          icon="account-cash-outline"
+          label={t("debt")}
+          active={activeRoute === "Customers"}
+          onPress={() => onNavigate("Customers")}
+        />
+        <NavItem
+          icon="cart-outline"
+          label={t("cart")}
+          active={activeRoute === "Cart"}
+          onPress={() => onNavigate("Cart")}
+          badge={cartSize}
+        />
+      </View>
+    );
+  },
+);
 
 interface NavItemProps {
   icon: keyof typeof MaterialCommunityIcons.glyphMap;
@@ -48,14 +51,19 @@ interface NavItemProps {
   onPress: () => void;
 }
 
-function NavItem({ icon, label, active = false, badge = 0, onPress }: NavItemProps) {
+function NavItem({
+  icon,
+  label,
+  active = false,
+  badge = 0,
+  onPress,
+}: NavItemProps) {
   return (
     <Pressable
       style={styles.navItem}
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={label}
-    >
+      accessibilityLabel={label}>
       <View style={styles.navIconWrap}>
         <MaterialCommunityIcons
           name={icon}
@@ -64,11 +72,15 @@ function NavItem({ icon, label, active = false, badge = 0, onPress }: NavItemPro
         />
         {badge > 0 && (
           <View style={styles.navBadge}>
-            <Text style={styles.navBadgeText}>{badge > 99 ? "99+" : badge}</Text>
+            <Text style={styles.navBadgeText}>
+              {badge > 99 ? "99+" : badge}
+            </Text>
           </View>
         )}
       </View>
-      <Text style={[styles.navLabel, active && styles.navLabelActive]}>{label}</Text>
+      <Text style={[styles.navLabel, active && styles.navLabelActive]}>
+        {label}
+      </Text>
     </Pressable>
   );
 }

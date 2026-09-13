@@ -1,6 +1,7 @@
 import React, { memo, useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { t } from "../../i18n";
 import { CartItem as CartItemType } from "../../types";
 import { getSaleQuantityStep } from "../../store/useCartStore";
 
@@ -53,12 +54,12 @@ function CartItem({
             {item.name}
           </Text>
           <Text style={styles.meta}>
-            {item.selling_price.toLocaleString()} MMK each ·{" "}
+            {item.selling_price.toLocaleString()} {t("mmk")} ·{" "}
             {item.is_base_unit
               ? item.selling_unit === "unit"
-                ? "per unit"
-                : `per ${item.selling_unit}`
-              : `Pack of ${item.conversion_rate}`}
+                ? t("perUnit")
+                : t("per", { unit: item.selling_unit })
+              : t("packOf", { count: item.conversion_rate })}
           </Text>
         </View>
 
@@ -99,7 +100,7 @@ function CartItem({
 
         <Text style={styles.lineTotal}>
           {(item.selling_price * item.quantity).toLocaleString()}{" "}
-          <Text style={styles.currency}>MMK</Text>
+          <Text style={styles.currency}>{t("mmk")}</Text>
         </Text>
       </View>
     </View>

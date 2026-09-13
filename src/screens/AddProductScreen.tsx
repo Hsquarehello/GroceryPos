@@ -33,6 +33,7 @@ import {
   WeightUnitPickerModal,
 } from "../components/modals/WeightUnitPickerModal";
 import { BaseProductPickerModal } from "../components/modals/BaseProductPickerModal";
+import { t } from "../i18n";
 
 type Props = NativeStackScreenProps<
   RootStackParamList,
@@ -159,26 +160,20 @@ export default function AddProductScreen({ navigation, route }: Props) {
 
   const saveProductHandler = async () => {
     if (!form.name.trim()) {
-      Alert.alert("Missing Detail", "Please enter product name.");
+      Alert.alert(t("missingDetail"), t("enterProductName"));
       return;
     }
     if (form.selling_price <= 0) {
-      Alert.alert("Invalid Price", "Selling price must be greater than zero.");
+      Alert.alert(t("invalidPrice"), t("priceGreaterZero"));
       return;
     }
     if (!form.is_base_unit) {
       if (!form.parent_id) {
-        Alert.alert(
-          "Missing Base Product",
-          "Please select a base product for this package.",
-        );
+        Alert.alert(t("missingBaseProduct"), t("selectBaseProduct"));
         return;
       }
       if (form.conversion_rate <= 1) {
-        Alert.alert(
-          "Invalid Conversion Rate",
-          "Base units per package must be greater than 1.",
-        );
+        Alert.alert(t("invalidConversion"), t("conversionGreaterOne"));
         return;
       }
     }
@@ -199,8 +194,8 @@ export default function AddProductScreen({ navigation, route }: Props) {
       navigation.goBack();
     } catch (error) {
       Alert.alert(
-        "Error",
-        error instanceof Error ? error.message : "Failed to save product.",
+        t("error"),
+        error instanceof Error ? error.message : t("failedSaveProduct"),
       );
     } finally {
       setSaving(false);
@@ -215,9 +210,9 @@ export default function AddProductScreen({ navigation, route }: Props) {
         keyboardShouldPersistTaps="handled">
         {/* Header Section */}
         <View style={styles.header}>
-          <Text style={styles.eyebrow}>INVENTORY MANAGEMENT</Text>
+          <Text style={styles.eyebrow}>{t("inventoryManagement")}</Text>
           <Text style={styles.headerTitle}>
-            {editing ? "Edit Product" : "Add New Product"}
+            {editing ? t("editProduct") : t("addNewProduct")}
           </Text>
         </View>
 
@@ -286,7 +281,7 @@ export default function AddProductScreen({ navigation, route }: Props) {
           onPress={saveProductHandler}
           disabled={saving}>
           <Text style={styles.saveBtnText}>
-            {saving ? "Saving..." : editing ? "Update Product" : "Save Product"}
+            {saving ? t("saving") : editing ? t("update") : t("save")}
           </Text>
         </Pressable>
 

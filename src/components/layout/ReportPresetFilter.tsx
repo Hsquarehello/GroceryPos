@@ -1,6 +1,7 @@
 // components/ReportPresetFilter.tsx
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { t } from "../../i18n";
 
 export type Preset = "today" | "yesterday" | "week" | "month";
 
@@ -35,10 +36,10 @@ interface ReportPresetFilterProps {
 }
 
 const PRESETS: Array<[Preset, string]> = [
-  ["today", "Today"],
-  ["yesterday", "Yesterday"],
-  ["week", "This week"],
-  ["month", "This month"],
+  ["today", t("today")],
+  ["yesterday", t("yesterday")],
+  ["week", t("thisWeek")],
+  ["month", t("thisMonth")],
 ];
 
 export function ReportPresetFilter({

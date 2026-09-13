@@ -2,6 +2,7 @@ import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Customer } from "../../types";
+import { t } from "../../i18n";
 
 interface CustomerCardProps {
   customer: Customer;
@@ -53,7 +54,8 @@ export const CustomerCard: React.FC<CustomerCardProps> = ({
             <Text style={styles.phone}>{customer.phone}</Text>
           )}
           <Text style={[styles.debt, isPaid && styles.paid]}>
-            {customer.total_debt.toLocaleString()} MMK outstanding
+            {customer.total_debt.toLocaleString()} {t("mmk")}{" "}
+            {t("totalOutstanding")}
           </Text>
         </View>
       </Pressable>
@@ -63,7 +65,7 @@ export const CustomerCard: React.FC<CustomerCardProps> = ({
         disabled={isPaid}
         onPress={() => onRepay(customer)}>
         <MaterialCommunityIcons name="cash-check" size={17} color="#fff" />
-        <Text style={styles.repayText}>Repay</Text>
+        <Text style={styles.repayText}>{t("repay")}</Text>
       </Pressable>
     </View>
   );

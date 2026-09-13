@@ -11,6 +11,7 @@ import {
   View,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { t } from "../../i18n";
 
 interface MoreOptionsModalProps {
   visible: boolean;
@@ -43,36 +44,32 @@ export default function MoreOptionsModal({
         <View style={styles.moreOptionsSheet}>
           <View style={styles.sheetHandle} />
           <View style={styles.sheetHeader}>
-            <Text style={styles.modalTitle}>More options</Text>
+            <Text style={styles.modalTitle}>{t("moreOptionsTitle")}</Text>
             <Pressable onPress={onClose}>
-              <MaterialCommunityIcons
-                name="close"
-                size={22}
-                color="#7a6a52"
-              />
+              <MaterialCommunityIcons name="close" size={22} color="#7a6a52" />
             </Pressable>
           </View>
-          <Text style={styles.cashLabel}>Discount (MMK)</Text>
+          <Text style={styles.cashLabel}>{t("discountMmK")}</Text>
           <TextInput
             value={draftDiscount}
             onChangeText={setDraftDiscount}
             style={styles.cashInput}
             keyboardType="decimal-pad"
-            placeholder="Enter discount amount"
+            placeholder={t("enterDiscountAmount")}
             placeholderTextColor="#9aaa9f"
           />
-          <Text style={styles.cashLabel}>Sale note (optional)</Text>
+          <Text style={styles.cashLabel}>{t("saleNoteOptional")}</Text>
           <TextInput
             value={draftSaleNote}
             onChangeText={setDraftSaleNote}
             style={[styles.cashInput, styles.noteInput]}
             multiline
             numberOfLines={3}
-            placeholder="e.g. Broken product - discount applied"
+            placeholder={t("saleNotePlaceholder")}
             placeholderTextColor="#9aaa9f"
           />
           <Pressable style={styles.applyButton} onPress={onApply}>
-            <Text style={styles.applyButtonText}>Apply</Text>
+            <Text style={styles.applyButtonText}>{t("apply")}</Text>
           </Pressable>
         </View>
       </KeyboardAvoidingView>

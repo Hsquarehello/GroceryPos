@@ -24,7 +24,7 @@ export interface TransactionDetailItem {
   id: number;
   product_id: number;
   product_name: string;
-  selling_unit: "unit" | "kg" | "g" | "viss" | "tcl";
+  selling_unit: "unit" | "kg" | "g" | "ပိဿာ" | "ကျပ်သား";
   quantity: number;
   unit_price: number;
   line_total: number;

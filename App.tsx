@@ -16,6 +16,7 @@ import ReportsScreen from "./src/screens/ReportsScreen";
 import CustomersScreen from "./src/screens/CustomersScreen";
 import TransactionsScreen from "./src/screens/TransactionsScreen";
 import QuantitySoldScreen from "./src/screens/QuantitySoldScreen";
+import { t } from "./src/i18n";
 
 export type RootStackParamList = {
   Home: undefined;
@@ -71,7 +72,7 @@ export default function App() {
   if (!ready) {
     return (
       <SafeAreaView style={styles.container}>
-        <Text style={styles.text}>Loading...</Text>
+        <Text style={styles.text}>{t("loading")}</Text>
       </SafeAreaView>
     );
   }
@@ -86,47 +87,47 @@ export default function App() {
         <Stack.Screen
           name="Home"
           component={HomeScreen}
-          options={{ title: "Products" }}
+          options={{ title: t("products") }}
         />
         <Stack.Screen
           name="AddProduct"
           component={AddProductScreen}
-          options={{ title: "Add product" }}
+          options={{ title: t("addProduct") }}
         />
         <Stack.Screen
           name="EditProduct"
           component={AddProductScreen}
-          options={{ title: "Edit product" }}
+          options={{ title: t("editProduct") }}
         />
         <Stack.Screen
           name="Scanner"
           component={ScannerScreen}
-          options={{ title: "Scan barcode" }}
+          options={{ title: t("scanBarcode") }}
         />
         <Stack.Screen
           name="Cart"
           component={CartScreen}
-          options={{ title: "Checkout" }}
+          options={{ title: t("checkout") }}
         />
         <Stack.Screen
           name="Reports"
           component={ReportsScreen}
-          options={{ title: "Daily report" }}
+          options={{ title: t("dailyReport") }}
         />
         <Stack.Screen
           name="Transactions"
           component={TransactionsScreen}
-          options={{ title: "Transactions" }}
+          options={{ title: t("transactions") }}
         />
         <Stack.Screen
           name="QuantitySold"
           component={QuantitySoldScreen}
-          options={{ title: "Quantity sold" }}
+          options={{ title: t("quantitySold") }}
         />
         <Stack.Screen
           name="Customers"
           component={CustomersScreen}
-          options={{ title: "Customers" }}
+          options={{ title: t("customers") }}
         />
       </Stack.Navigator>
       <UpdateModal

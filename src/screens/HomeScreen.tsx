@@ -23,6 +23,7 @@ import { ProductEmptyState } from "../components/common/ProductEmptyState";
 import { BottomNavBar } from "../components/layout/BottomNavBar";
 
 import { useDebounce } from "../hooks/useDebounce";
+import { t } from "../i18n";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Home">;
 
@@ -45,7 +46,7 @@ export default function HomeScreen({ navigation }: Props) {
     try {
       setProducts(await getProducts(debouncedSearch));
     } catch {
-      Alert.alert("Error", "Could not load products");
+      Alert.alert(t("error"), t("couldNotLoadProducts"));
     } finally {
       setRefreshing(false);
     }
@@ -68,10 +69,10 @@ export default function HomeScreen({ navigation }: Props) {
   // 3. Delete Product Handler
   const handleRemove = useCallback(
     (product: Product) => {
-      Alert.alert("Delete product?", product.name, [
-        { text: "Cancel", style: "cancel" },
+      Alert.alert(t("deleteProductQuestion"), product.name, [
+        { text: t("cancel"), style: "cancel" },
         {
-          text: "Delete",
+          text: t("delete"),
           style: "destructive",
           onPress: async () => {
             try {
@@ -81,7 +82,7 @@ export default function HomeScreen({ navigation }: Props) {
               }
               void loadProducts();
             } catch {
-              Alert.alert("Error", "Could not delete product");
+              Alert.alert(t("error"), t("couldNotDeleteProduct"));
             }
           },
         },
@@ -94,7 +95,7 @@ export default function HomeScreen({ navigation }: Props) {
   const handleAddToCart = useCallback(
     (product: Product) => {
       if (product.stock_qty <= 0) {
-        Alert.alert("Out of Stock", "This product is currently out of stock.");
+        Alert.alert(t("outOfStock"), t("outOfStockMessage"));
         return;
       }
       addItem(product);
@@ -112,8 +113,12 @@ export default function HomeScreen({ navigation }: Props) {
 
       {/* Summary Row */}
       <View style={styles.summary}>
-        <Text style={styles.summaryLabel}>{products.length} products</Text>
-        <Text style={styles.warning}>{lowStockCount} low stock</Text>
+        <Text style={styles.summaryLabel}>
+          {t("productCount", { count: products.length })}
+        </Text>
+        <Text style={styles.warning}>
+          {t("lowStockCount", { count: lowStockCount })}
+        </Text>
       </View>
 
       {/* Product List */}
@@ -146,7 +151,7 @@ export default function HomeScreen({ navigation }: Props) {
         style={styles.fab}
         onPress={() => navigation.navigate("AddProduct")}>
         <MaterialCommunityIcons name="plus" size={22} color="#fff" />
-        <Text style={styles.fabText}>Add product</Text>
+        <Text style={styles.fabText}>{t("addProduct")}</Text>
       </Pressable>
 
       {/* Navigation Bar */}

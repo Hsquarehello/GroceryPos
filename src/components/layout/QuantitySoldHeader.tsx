@@ -1,6 +1,7 @@
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { t } from "../../i18n";
 
 interface HeaderProps {
   startDate: Date;
@@ -19,12 +20,10 @@ export function QuantitySoldHeader({
     <View style={styles.header}>
       <View>
         <Text style={styles.eyebrow}>
-          {isSingleDay ? "SELECTED DATE" : "DATE RANGE"}
+          {isSingleDay ? t("selectedDate") : t("dateRange")}
         </Text>
-        <Text style={styles.heading}>Quantity sold</Text>
-        <Text style={styles.subheading}>
-          Products sold across completed sales
-        </Text>
+        <Text style={styles.heading}>{t("quantitySold")}</Text>
+        <Text style={styles.subheading}>{t("productsSoldCompleted")}</Text>
       </View>
       <Pressable style={styles.backButton} onPress={onBackPress}>
         <MaterialCommunityIcons name="arrow-left" size={19} color="#3a2818" />

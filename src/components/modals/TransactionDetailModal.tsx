@@ -1,10 +1,8 @@
 import React, { useState } from "react";
 import { Alert, Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import {
-  refundTransaction,
-  TransactionDetail,
-} from "../../database";
+import { refundTransaction, TransactionDetail } from "../../database";
+import { t } from "../../i18n";
 import { formatMoney } from "../../utils/formatters";
 import { DetailAmount } from "../common/DetailAmount";
 
@@ -29,35 +27,28 @@ export function TransactionDetailModal({
 
   const refund = () => {
     if (!detail || detail.status === "REFUNDED") return;
-    Alert.alert(
-      "Refund sale",
-      `Return all items from Sale #${detail.id} to stock?`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Refund",
-          style: "destructive",
-          onPress: async () => {
-            setProcessing(true);
-            try {
-              await refundTransaction(detail.id);
-              await onChanged();
-              Alert.alert(
-                "Refund complete",
-                "The sale was refunded and stock was restored.",
-              );
-            } catch (error) {
-              Alert.alert(
-                "Could not refund sale",
-                error instanceof Error ? error.message : "Please try again.",
-              );
-            } finally {
-              setProcessing(false);
-            }
-          },
+    Alert.alert(t("refundSale"), t("refundSaleConfirm", { id: detail.id }), [
+      { text: t("cancel"), style: "cancel" },
+      {
+        text: t("refundAction"),
+        style: "destructive",
+        onPress: async () => {
+          setProcessing(true);
+          try {
+            await refundTransaction(detail.id);
+            await onChanged();
+            Alert.alert(t("refundComplete"), t("refundCompleteMessage"));
+          } catch (error) {
+            Alert.alert(
+              t("couldNotRefundSale"),
+              error instanceof Error ? error.message : t("tryAgain"),
+            );
+          } finally {
+            setProcessing(false);
+          }
         },
-      ],
-    );
+      },
+    ]);
   };
 
   return (
@@ -70,9 +61,11 @@ export function TransactionDetailModal({
         <View style={styles.detailModal}>
           <View style={styles.detailHeader}>
             <View>
-              <Text style={styles.modalEyebrow}>TRANSACTION DETAIL</Text>
+              <Text style={styles.modalEyebrow}>
+                {t("transactionDetailTitle").toUpperCase()}
+              </Text>
               <Text style={styles.modalTitle}>
-                {detail ? `Sale #${detail.id}` : "Loading sale"}
+                {detail ? t("saleNumber", { id: detail.id }) : t("loadingSale")}
               </Text>
             </View>
             <Pressable style={styles.closeButton} onPress={onClose}>
@@ -83,7 +76,7 @@ export function TransactionDetailModal({
           {loading || !detail ? (
             <View style={styles.loadingDetail}>
               <Text style={styles.detailMuted}>
-                Loading transaction details...
+                {t("loadingTransactionDetails")}
               </Text>
             </View>
           ) : (
@@ -109,10 +102,10 @@ export function TransactionDetailModal({
                       detail.status === "REFUNDED" && styles.refundedBadgeText,
                     ]}>
                     {detail.status === "REFUNDED"
-                      ? "REFUNDED"
+                      ? t("refunded").toUpperCase()
                       : isCredit
-                        ? "CREDIT"
-                        : "CASH"}
+                        ? t("credit").toUpperCase()
+                        : t("cash").toUpperCase()}
                   </Text>
                 </View>
                 {detail.customer_name ? (
@@ -123,7 +116,7 @@ export function TransactionDetailModal({
                 ) : null}
               </View>
 
-              <Text style={styles.detailSectionTitle}>Items</Text>
+              <Text style={styles.detailSectionTitle}>{t("itemsLabel")}</Text>
               {detail.items.map((item) => (
                 <View key={item.id} style={styles.detailItem}>
                   <View style={styles.detailItemInfo}>
@@ -142,22 +135,28 @@ export function TransactionDetailModal({
               ))}
 
               <View style={styles.detailTotals}>
-                <DetailAmount label="Discount" value={detail.discount_amount} />
                 <DetailAmount
-                  label="Sale total"
+                  label={t("discount")}
+                  value={detail.discount_amount}
+                />
+                <DetailAmount
+                  label={t("saleTotalLabel")}
                   value={detail.total_amount}
                   strong
                 />
                 <DetailAmount
-                  label={isCredit ? "Paid now" : "Collected"}
+                  label={isCredit ? t("paidNowLabel") : t("collected")}
                   value={isCredit ? detail.cash_received : detail.total_amount}
                 />
                 {!isCredit && (
-                  <DetailAmount label="Change" value={detail.change_amount} />
+                  <DetailAmount
+                    label={t("change").replace(": {amount}", "")}
+                    value={detail.change_amount}
+                  />
                 )}
                 {isCredit && (
                   <DetailAmount
-                    label="Outstanding"
+                    label={t("outstanding")}
                     value={outstanding}
                     danger
                     strong
@@ -169,12 +168,12 @@ export function TransactionDetailModal({
                 <View style={styles.notesBox}>
                   {detail.sale_note ? (
                     <Text style={styles.noteText}>
-                      Sale note: {detail.sale_note}
+                      {t("saleNoteLabel", { note: detail.sale_note })}
                     </Text>
                   ) : null}
                   {detail.debt_note ? (
                     <Text style={styles.noteText}>
-                      Debt note: {detail.debt_note}
+                      {t("debtNoteLabel", { note: detail.debt_note })}
                     </Text>
                   ) : null}
                 </View>
@@ -191,7 +190,9 @@ export function TransactionDetailModal({
                       size={17}
                       color="#a33e2b"
                     />
-                    <Text style={styles.refundButtonText}>Refund sale</Text>
+                    <Text style={styles.refundButtonText}>
+                      {t("refundSale")}
+                    </Text>
                   </Pressable>
                 ) : null}
               </View>

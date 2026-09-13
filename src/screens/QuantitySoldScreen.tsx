@@ -12,10 +12,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { RootStackParamList } from "../../App";
-import {
-  getQuantitySoldByDateRange,
-  QuantitySoldItem,
-} from "../database";
+import { getQuantitySoldByDateRange, QuantitySoldItem } from "../database";
 
 import { QuantitySoldHeader } from "../components/layout/QuantitySoldHeader";
 import {
@@ -28,6 +25,7 @@ import {
   SortDirection,
   SortModal,
 } from "../components/modals/SortModal";
+import { t } from "../i18n";
 
 type Props = NativeStackScreenProps<RootStackParamList, "QuantitySold">;
 
@@ -61,7 +59,7 @@ export default function QuantitySoldScreen({ navigation, route }: Props) {
     try {
       setItems(await getQuantitySoldByDateRange(startDate, endDate));
     } catch {
-      Alert.alert("Error", "Could not load quantity sold.");
+      Alert.alert(t("error"), t("couldNotLoadQuantity"));
     } finally {
       setRefreshing(false);
     }
@@ -77,7 +75,7 @@ export default function QuantitySoldScreen({ navigation, route }: Props) {
     .filter((item) => {
       if (unitFilter === "items") return item.selling_unit === "unit";
       if (unitFilter === "weight") {
-        return ["kg", "g", "viss", "tcl"].includes(item.selling_unit);
+        return ["kg", "g", "ပိဿာ", "ကျပ်သား"].includes(item.selling_unit);
       }
       return true;
     })
@@ -114,13 +112,13 @@ export default function QuantitySoldScreen({ navigation, route }: Props) {
               onSelectFilter={setUnitFilter}
             />
             <View style={styles.sortRow}>
-              <Text style={styles.sortLabel}>Sort by</Text>
+              <Text style={styles.sortLabel}>{t("sortBy")}</Text>
               <Pressable
                 style={styles.sortSelect}
                 onPress={() => setShowSortMenu(true)}>
                 <Text style={styles.sortSelectText}>
-                  {sortBy === "quantity" ? "Quantity" : "Revenue"} ·{" "}
-                  {sortDirection === "asc" ? "Ascending" : "Descending"}
+                  {sortBy === "quantity" ? t("quantity") : t("revenue")} ·{" "}
+                  {sortDirection === "asc" ? t("ascending") : t("descending")}
                 </Text>
                 <MaterialCommunityIcons
                   name="chevron-down"
@@ -141,14 +139,12 @@ export default function QuantitySoldScreen({ navigation, route }: Props) {
               />
               <Text style={styles.emptyTitle}>
                 {unitFilter === "all"
-                  ? "No quantities sold for this period"
+                  ? t("noQuantityPeriod")
                   : unitFilter === "items"
-                    ? "No item products sold for this period"
-                    : "No weight products sold for this period"}
+                    ? t("noItemPeriod")
+                    : t("noWeightPeriod")}
               </Text>
-              <Text style={styles.emptyText}>
-                Completed sale quantities will appear here.
-              </Text>
+              <Text style={styles.emptyText}>{t("completedQuantities")}</Text>
             </View>
           ) : null
         }

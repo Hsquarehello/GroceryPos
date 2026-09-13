@@ -1,6 +1,7 @@
 import React from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { t } from "../../i18n";
 
 interface HomeHeaderProps {
   search: string;
@@ -14,8 +15,8 @@ export const HomeHeader = React.memo(
       <View>
         <View style={styles.headerRow}>
           <View>
-            <Text style={styles.eyebrow}>INVENTORY</Text>
-            <Text style={styles.heading}>Your products</Text>
+            <Text style={styles.eyebrow}>{t("inventory")}</Text>
+            <Text style={styles.heading}>{t("yourProducts")}</Text>
           </View>
           <View style={styles.headerActions}>
             <Pressable style={styles.scanButton} onPress={onScanPress}>
@@ -24,7 +25,7 @@ export const HomeHeader = React.memo(
                 size={20}
                 color="#fff"
               />
-              <Text style={styles.scanText}>Scan</Text>
+              <Text style={styles.scanText}>{t("scan")}</Text>
             </Pressable>
           </View>
         </View>
@@ -32,7 +33,7 @@ export const HomeHeader = React.memo(
         <TextInput
           value={search}
           onChangeText={onSearchChange}
-          placeholder="Search name or barcode"
+          placeholder={t("searchNameBarcode")}
           placeholderTextColor="#8a9b95"
           style={styles.search}
         />

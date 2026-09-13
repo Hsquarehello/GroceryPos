@@ -2,6 +2,7 @@ import React, { memo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Product } from "../../types";
+import { t } from "../../i18n";
 
 interface ProductCardProps {
   item: Product;
@@ -36,20 +37,20 @@ function ProductCard({
           {item.name}
         </Text>
         <Text style={styles.meta} numberOfLines={1}>
-          {item.barcode ? `Barcode: ${item.barcode}` : "No barcode"}
+          {item.barcode ? `${t("barcode")}: ${item.barcode}` : t("noBarcode")}
         </Text>
         <Text style={styles.unitLabel} numberOfLines={1}>
           {item.is_base_unit
             ? item.selling_unit === "unit"
-              ? "Sold by unit"
-              : `Sold by ${item.selling_unit}`
-            : `Package · ${item.conversion_rate} base units`}
+              ? t("soldByUnit")
+              : t("soldBy", { unit: item.selling_unit })
+            : t("packageBaseUnits", { count: item.conversion_rate })}
         </Text>
 
         <View style={styles.priceRow}>
           <Text style={styles.price}>
             {item.selling_price.toLocaleString()}{" "}
-            <Text style={styles.currency}>MMK</Text>
+            <Text style={styles.currency}>{t("mmk")}</Text>
           </Text>
         </View>
       </View>
@@ -83,8 +84,8 @@ function ProductCard({
                 isLowStock && styles.lowText,
               ]}>
               {isOutOfStock
-                ? "Out of stock"
-                : `${item.stock_qty} ${item.is_base_unit ? item.selling_unit : "packs"}`}
+                ? t("outOfStock")
+                : `${item.stock_qty} ${item.is_base_unit ? item.selling_unit : t("package")}`}
             </Text>
           </View>
         </View>
@@ -95,7 +96,7 @@ function ProductCard({
           disabled={isOutOfStock}
           onPress={() => onAddToCart(item)}>
           <MaterialCommunityIcons name="cart-plus" size={16} color="#fff" />
-          <Text style={styles.addText}>Add</Text>
+          <Text style={styles.addText}>{t("add")}</Text>
         </Pressable>
       </View>
     </Pressable>

@@ -1,6 +1,7 @@
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { t } from "../../i18n";
 import { TransactionSummary } from "../../database";
 import { formatMoney, formatTime } from "../../utils/formatters";
 
@@ -31,10 +32,14 @@ export function TransactionRow({ transaction, onPress }: TransactionRowProps) {
             />
           </View>
           <View>
-            <Text style={styles.transactionTitle}>Sale #{transaction.id}</Text>
+            <Text style={styles.transactionTitle}>
+              {t("saleNumber", { id: transaction.id })}
+            </Text>
             <Text style={styles.transactionMeta}>
-              {formatTime(transaction.created_at)} · {transaction.item_count}{" "}
-              {transaction.item_count === 1 ? "item" : "items"}
+              {formatTime(transaction.created_at)} ·{" "}
+              {t("itemMetric", {
+                count: transaction.item_count,
+              })}
             </Text>
           </View>
         </View>
@@ -50,21 +55,25 @@ export function TransactionRow({ transaction, onPress }: TransactionRowProps) {
               isCredit && styles.creditBadgeText,
               isRefunded && styles.refundedBadgeText,
             ]}>
-            {isRefunded ? "REFUNDED" : isCredit ? "CREDIT" : "CASH"}
+            {isRefunded
+              ? t("refunded").toUpperCase()
+              : isCredit
+                ? t("credit").toUpperCase()
+                : t("cash").toUpperCase()}
           </Text>
         </View>
       </View>
 
       <View style={styles.divider} />
       <View style={styles.amountRow}>
-        <Text style={styles.amountLabel}>Sale total</Text>
+        <Text style={styles.amountLabel}>{t("saleTotalLabel")}</Text>
         <Text style={styles.amountValue}>
           {formatMoney(transaction.total_amount)}
         </Text>
       </View>
       <View style={styles.amountRow}>
         <Text style={styles.amountLabel}>
-          {isCredit ? "Paid now" : "Collected"}
+          {isCredit ? t("paidNowLabel") : t("collected")}
         </Text>
         <Text style={styles.amountValue}>
           {formatMoney(
@@ -74,7 +83,7 @@ export function TransactionRow({ transaction, onPress }: TransactionRowProps) {
       </View>
       {isCredit && (
         <View style={styles.amountRow}>
-          <Text style={styles.dueLabel}>Outstanding</Text>
+          <Text style={styles.dueLabel}>{t("outstanding")}</Text>
           <Text style={styles.dueValue}>{formatMoney(amountDue)}</Text>
         </View>
       )}

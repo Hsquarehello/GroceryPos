@@ -3,6 +3,7 @@ import React from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Customer } from "../../types";
+import { t } from "../../i18n";
 
 interface CartSummaryFooterProps {
   subtotal: number;
@@ -55,10 +56,10 @@ export default function CartSummaryFooter({
     <View style={styles.footer}>
       {/* Subtotal */}
       <View style={styles.totalRow}>
-        <Text style={styles.totalLabel}>Subtotal</Text>
+        <Text style={styles.totalLabel}>{t("subtotal")}</Text>
         <View style={styles.subtotalActions}>
           <Text style={styles.subtotalText}>
-            {subtotal.toLocaleString()} MMK
+            {subtotal.toLocaleString()} {t("mmk")}
           </Text>
           <Pressable
             style={styles.moreOptionsButton}
@@ -68,23 +69,25 @@ export default function CartSummaryFooter({
               size={16}
               color="#3a2818"
             />
-            <Text style={styles.moreOptionsText}>More options</Text>
+            <Text style={styles.moreOptionsText}>{t("moreOptions")}</Text>
           </Pressable>
         </View>
       </View>
 
       {(discount || saleNote) && (
         <Text style={styles.optionsApplied}>
-          {discount ? `Discount: ${discount} MMK` : ""}
+          {discount ? `${t("discount")}: ${discount} ${t("mmk")}` : ""}
           {discount && saleNote ? "  |  " : ""}
-          {saleNote ? "Sale note added" : ""}
+          {saleNote ? t("saleNoteAdded") : ""}
         </Text>
       )}
 
       {/* Net Total */}
       <View style={[styles.totalRow, { marginTop: 8 }]}>
-        <Text style={styles.totalLabel}>Net Total</Text>
-        <Text style={styles.total}>{netTotal.toLocaleString()} MMK</Text>
+        <Text style={styles.totalLabel}>{t("netTotal")}</Text>
+        <Text style={styles.total}>
+          {netTotal.toLocaleString()} {t("mmk")}
+        </Text>
       </View>
 
       {/* Payment Type Toggle */}
@@ -102,7 +105,7 @@ export default function CartSummaryFooter({
                 styles.paymentOptionText,
                 paymentType === type && styles.paymentOptionTextActive,
               ]}>
-              {type === "CASH" ? "Cash" : "Credit"}
+              {type === "CASH" ? t("cash") : t("credit")}
             </Text>
           </Pressable>
         ))}
@@ -111,40 +114,42 @@ export default function CartSummaryFooter({
       {/* Inputs according to Payment Type */}
       {paymentType === "CASH" ? (
         <>
-          <Text style={styles.cashLabel}>Cash received</Text>
+          <Text style={styles.cashLabel}>{t("cashReceived")}</Text>
           <TextInput
             value={cash}
             onChangeText={setCash}
             style={styles.cashInput}
             keyboardType="decimal-pad"
-            placeholder="Enter amount"
+            placeholder={t("enterAmount")}
             placeholderTextColor="#9aaa9f"
           />
         </>
       ) : (
         <>
-          <Text style={styles.cashLabel}>Paid now (0 for full credit)</Text>
+          <Text style={styles.cashLabel}>{t("paidNow")}</Text>
           <TextInput
             value={cash}
             onChangeText={setCash}
             style={styles.cashInput}
             keyboardType="decimal-pad"
-            placeholder="0 for full credit"
+            placeholder={t("zeroFullCredit")}
             placeholderTextColor="#9aaa9f"
           />
           <View style={styles.creditSummary}>
             <Text style={styles.creditSummaryLabel}>
-              {cashValue === 0 ? "Full credit" : "Split payment"}
+              {cashValue === 0 ? t("fullCreditLabel") : t("splitPaymentLabel")}
             </Text>
             <Text style={styles.creditSummaryValue}>
-              Due: {Math.max(0, netTotal - cashValue).toLocaleString()} MMK
+              {t("due", {
+                amount: `${Math.max(0, netTotal - cashValue).toLocaleString()} ${t("mmk")}`,
+              })}
             </Text>
           </View>
           <Pressable
             style={styles.customerPicker}
             onPress={onOpenCustomerPicker}>
             <Text style={styles.customerPickerText}>
-              {selectedCustomer?.name ?? "Select customer"}
+              {selectedCustomer?.name ?? t("selectCustomer")}
             </Text>
             <MaterialCommunityIcons
               name="account-search-outline"
@@ -152,14 +157,14 @@ export default function CartSummaryFooter({
               color="#7a6a52"
             />
           </Pressable>
-          <Text style={styles.cashLabel}>Debt note (optional)</Text>
+          <Text style={styles.cashLabel}>{t("debtNote")}</Text>
           <TextInput
             value={debtNote}
             onChangeText={setDebtNote}
             style={[styles.cashInput, styles.noteInput]}
             multiline
             numberOfLines={2}
-            placeholder="e.g. Customer will pay next Friday"
+            placeholder={t("debtNoteExample")}
             placeholderTextColor="#9aaa9f"
           />
         </>
@@ -167,8 +172,10 @@ export default function CartSummaryFooter({
 
       {paymentType === "CASH" && (
         <View style={styles.changeRow}>
-          <Text style={styles.changeLabel}>Change due</Text>
-          <Text style={styles.change}>{change.toLocaleString()} MMK</Text>
+          <Text style={styles.changeLabel}>{t("changeDue")}</Text>
+          <Text style={styles.change}>
+            {change.toLocaleString()} {t("mmk")}
+          </Text>
         </View>
       )}
 
@@ -179,8 +186,10 @@ export default function CartSummaryFooter({
         disabled={isCheckoutDisabled}>
         <Text style={styles.payText}>
           {checkingOut
-            ? "Processing..."
-            : `Complete sale  ${netTotal.toLocaleString()} MMK`}
+            ? t("processing")
+            : t("completeSale", {
+                amount: `${netTotal.toLocaleString()} ${t("mmk")}`,
+              })}
         </Text>
       </Pressable>
     </View>

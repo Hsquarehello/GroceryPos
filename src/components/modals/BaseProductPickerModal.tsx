@@ -9,6 +9,7 @@ import {
   View,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { t } from "../../i18n";
 import { Product } from "../../types";
 
 interface Props {
@@ -52,14 +53,14 @@ export function BaseProductPickerModal({
       onRequestClose={handleClose}>
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Select Base Unit Product</Text>
+          <Text style={styles.modalTitle}>{t("selectBaseProduct")}</Text>
           <View style={styles.modalSearchBox}>
             <MaterialCommunityIcons name="magnify" size={19} color="#8a9b95" />
             <TextInput
               value={searchQuery}
               onChangeText={setSearchQuery}
               style={styles.modalSearchInput}
-              placeholder="Search by name or barcode"
+              placeholder={t("searchByNameOrBarcode")}
               placeholderTextColor="#8a9b95"
               returnKeyType="search"
               autoCapitalize="none"
@@ -68,7 +69,7 @@ export function BaseProductPickerModal({
               <Pressable
                 style={styles.modalSearchClear}
                 onPress={() => setSearchQuery("")}
-                accessibilityLabel="Clear base product search">
+                accessibilityLabel={t("clearBaseProductSearch")}>
                 <MaterialCommunityIcons
                   name="close-circle"
                   size={18}
@@ -87,17 +88,19 @@ export function BaseProductPickerModal({
                   handleClose();
                 }}>
                 <Text style={styles.modalItemText}>{p.name}</Text>
-                <Text style={styles.modalItemSub}>Stock: {p.stock_qty}</Text>
+                <Text style={styles.modalItemSub}>
+                  {t("stockLabel", { count: p.stock_qty })}
+                </Text>
               </Pressable>
             ))}
             {!visibleProducts.length && (
               <Text style={styles.modalEmptyText}>
-                No matching base products.
+                {t("noMatchingBaseProducts")}
               </Text>
             )}
           </ScrollView>
           <Pressable style={styles.closeBtn} onPress={handleClose}>
-            <Text style={styles.closeText}>Cancel</Text>
+            <Text style={styles.closeText}>{t("cancel")}</Text>
           </Pressable>
         </View>
       </View>
