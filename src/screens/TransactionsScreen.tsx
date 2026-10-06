@@ -6,6 +6,7 @@ import {
   RefreshControl,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -20,10 +21,13 @@ import {
 } from "../database";
 import { TransactionRow } from "../components/rows/TransactionRow";
 import { TransactionDetailModal } from "../components/modals/TransactionDetailModal";
+import { t } from "../i18n";
+import { getResponsiveContentStyle } from "../utils/responsive";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Transactions">;
 
 export default function TransactionsScreen({ navigation, route }: Props) {
+  const { width } = useWindowDimensions();
   const [transactions, setTransactions] = useState<TransactionSummary[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(0);
@@ -64,7 +68,7 @@ export default function TransactionsScreen({ navigation, route }: Props) {
         setHasMore(result.hasMore);
         setPage(targetPage);
       } catch {
-        Alert.alert("Error", "Could not load the selected transactions.");
+        Alert.alert(t("error"), t("couldNotLoadTransactions"));
       } finally {
         setRefreshing(false);
       }
@@ -84,7 +88,7 @@ export default function TransactionsScreen({ navigation, route }: Props) {
       const detail = await getTransactionDetail(transactionId);
       setSelectedTransaction(detail);
     } catch {
-      Alert.alert("Error", "Could not load transaction details.");
+      Alert.alert(t("error"), t("couldNotLoadTransactionDetail"));
     } finally {
       setLoadingDetail(false);
     }
@@ -101,7 +105,10 @@ export default function TransactionsScreen({ navigation, route }: Props) {
       <FlatList
         data={transactions}
         keyExtractor={(item) => String(item.id)}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[
+          styles.content,
+          getResponsiveContentStyle(width, 900),
+        ]}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -114,20 +121,11 @@ export default function TransactionsScreen({ navigation, route }: Props) {
             <View>
               <Text style={styles.eyebrow}>
                 {startDate.toDateString() === endDate.toDateString()
-                  ? "SELECTED DATE"
-                  : "DATE RANGE"}
+                  ? t("selectedDate")
+                  : t("dateRange")}
               </Text>
-              <Text style={styles.heading}>Transactions</Text>
+              <Text style={styles.heading}>{t("transactions")}</Text>
             </View>
-            <Pressable
-              style={styles.backButton}
-              onPress={() => navigation.goBack()}>
-              <MaterialCommunityIcons
-                name="arrow-left"
-                size={19}
-                color="#3a2818"
-              />
-            </Pressable>
           </View>
         }
         ListEmptyComponent={
@@ -138,10 +136,8 @@ export default function TransactionsScreen({ navigation, route }: Props) {
                 size={48}
                 color="#ead8ae"
               />
-              <Text style={styles.emptyTitle}>No transactions today</Text>
-              <Text style={styles.emptyText}>
-                Completed sales will appear here.
-              </Text>
+              <Text style={styles.emptyTitle}>{t("noTransactionsToday")}</Text>
+              <Text style={styles.emptyText}>{t("completedSalesHere")}</Text>
             </View>
           ) : null
         }
@@ -168,10 +164,12 @@ export default function TransactionsScreen({ navigation, route }: Props) {
                     styles.pageButtonText,
                     page === 0 && styles.disabledText,
                   ]}>
-                  Previous
+                  {t("previous")}
                 </Text>
               </Pressable>
-              <Text style={styles.pageText}>Page {page + 1}</Text>
+              <Text style={styles.pageText}>
+                {t("page", { count: page + 1 })}
+              </Text>
               <Pressable
                 style={[styles.pageButton, !hasMore && styles.disabledButton]}
                 onPress={() => loadTransactions(page + 1)}
@@ -181,7 +179,7 @@ export default function TransactionsScreen({ navigation, route }: Props) {
                     styles.pageButtonText,
                     !hasMore && styles.disabledText,
                   ]}>
-                  Next
+                  {t("next")}
                 </Text>
                 <MaterialCommunityIcons
                   name="chevron-right"
@@ -211,13 +209,8 @@ export default function TransactionsScreen({ navigation, route }: Props) {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: "#fffaf0" },
-  content: { padding: 20, paddingBottom: 40, flexGrow: 1 },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 18,
-  },
+  content: { paddingVertical: 20, paddingBottom: 40, flexGrow: 1 },
+  header: { marginBottom: 18 },
   eyebrow: {
     color: "#f36f0a",
     fontSize: 11,
@@ -225,16 +218,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
   },
   heading: { color: "#3a2818", fontSize: 30, fontWeight: "800", marginTop: 4 },
-  backButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 10,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "#f0dfb6",
-  },
   empty: { alignItems: "center", paddingTop: 100 },
   emptyTitle: {
     color: "#3a2818",
@@ -245,8 +228,10 @@ const styles = StyleSheet.create({
   emptyText: { color: "#8a7658", marginTop: 6 },
   pagination: {
     flexDirection: "row",
+    flexWrap: "wrap",
     alignItems: "center",
     justifyContent: "space-between",
+    gap: 8,
     marginTop: 6,
     paddingVertical: 8,
   },

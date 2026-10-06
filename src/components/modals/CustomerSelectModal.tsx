@@ -10,6 +10,7 @@ import {
   View,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { t } from "../../i18n";
 import { Customer } from "../../types";
 
 interface CustomerSelectModalProps {
@@ -39,14 +40,14 @@ export default function CustomerSelectModal({
       onRequestClose={onClose}>
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Select customer</Text>
+          <Text style={styles.modalTitle}>{t("selectCustomerTitle")}</Text>
           <View style={styles.customerSearchBox}>
             <MaterialCommunityIcons name="magnify" size={20} color="#71837a" />
             <TextInput
               value={customerSearch}
               onChangeText={setCustomerSearch}
               style={styles.customerSearchInput}
-              placeholder="Search by customer name"
+              placeholder={t("searchByCustomerName")}
               placeholderTextColor="#9aaa9f"
               autoCapitalize="none"
               returnKeyType="search"
@@ -55,7 +56,7 @@ export default function CustomerSelectModal({
               <Pressable
                 style={styles.clearCustomerSearch}
                 onPress={() => setCustomerSearch("")}
-                accessibilityLabel="Clear customer search">
+                accessibilityLabel={t("clearCustomerSearchAlt")}>
                 <MaterialCommunityIcons
                   name="close-circle"
                   size={19}
@@ -76,22 +77,24 @@ export default function CustomerSelectModal({
                 <View>
                   <Text style={styles.customerName}>{customer.name}</Text>
                   <Text style={styles.customerDebt}>
-                    {customer.total_debt.toLocaleString()} MMK owed
+                    {t("customerDebtOwed", {
+                      amount: customer.total_debt.toLocaleString(),
+                    })}
                   </Text>
                 </View>
               </Pressable>
             )}
             ListEmptyComponent={
-              <Text style={styles.noCustomerFound}>No customer found</Text>
+              <Text style={styles.noCustomerFound}>{t("noCustomerFound")}</Text>
             }
           />
           <Pressable
             style={styles.newCustomerButton}
             onPress={onOpenNewCustomer}>
-            <Text style={styles.newCustomerText}>+ Add customer</Text>
+            <Text style={styles.newCustomerText}>+ {t("addCustomer")}</Text>
           </Pressable>
           <Pressable style={styles.closeButton} onPress={onClose}>
-            <Text style={styles.closeButtonText}>Cancel</Text>
+            <Text style={styles.closeButtonText}>{t("cancel")}</Text>
           </Pressable>
         </View>
       </View>

@@ -6,11 +6,13 @@ import {
   RefreshControl,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useFocusEffect } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { RootStackParamList } from "../../App";
 import { deleteProduct, getProducts } from "../database/productRepository";
@@ -23,10 +25,16 @@ import { ProductEmptyState } from "../components/common/ProductEmptyState";
 import { BottomNavBar } from "../components/layout/BottomNavBar";
 
 import { useDebounce } from "../hooks/useDebounce";
+import { t } from "../i18n";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Home">;
 
 export default function HomeScreen({ navigation }: Props) {
+  const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const isNarrow = width < 360;
+  const isWide = width >= 768;
+  const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [search, setSearch] = useState("");
   const [refreshing, setRefreshing] = useState(false);
@@ -45,7 +53,7 @@ export default function HomeScreen({ navigation }: Props) {
     try {
       setProducts(await getProducts(debouncedSearch));
     } catch {
-      Alert.alert("Error", "Could not load products");
+      Alert.alert(t("error"), t("couldNotLoadProducts"));
     } finally {
       setRefreshing(false);
     }
@@ -68,10 +76,10 @@ export default function HomeScreen({ navigation }: Props) {
   // 3. Delete Product Handler
   const handleRemove = useCallback(
     (product: Product) => {
-      Alert.alert("Delete product?", product.name, [
-        { text: "Cancel", style: "cancel" },
+      Alert.alert(t("deleteProductQuestion"), product.name, [
+        { text: t("cancel"), style: "cancel" },
         {
-          text: "Delete",
+          text: t("delete"),
           style: "destructive",
           onPress: async () => {
             try {
@@ -81,7 +89,7 @@ export default function HomeScreen({ navigation }: Props) {
               }
               void loadProducts();
             } catch {
-              Alert.alert("Error", "Could not delete product");
+              Alert.alert(t("error"), t("couldNotDeleteProduct"));
             }
           },
         },
@@ -94,7 +102,7 @@ export default function HomeScreen({ navigation }: Props) {
   const handleAddToCart = useCallback(
     (product: Product) => {
       if (product.stock_qty <= 0) {
-        Alert.alert("Out of Stock", "This product is currently out of stock.");
+        Alert.alert(t("outOfStock"), t("outOfStockMessage"));
         return;
       }
       addItem(product);
@@ -103,21 +111,31 @@ export default function HomeScreen({ navigation }: Props) {
   );
 
   return (
-    <View style={styles.screen}>
-      <HomeHeader
-        search={search}
-        onSearchChange={setSearch}
-        onScanPress={() => navigation.navigate("Scanner")}
-      />
+    <View
+      style={[
+        styles.screen,
+        isNarrow && styles.screenNarrow,
+        isWide && styles.screenWide,
+      ]}>
+      <View style={styles.pageContent}>
+        <HomeHeader
+          search={search}
+          onSearchChange={setSearch}
+          onScanPress={() => navigation.navigate("Scanner")}
+        />
 
-      {/* Summary Row */}
-      <View style={styles.summary}>
-        <Text style={styles.summaryLabel}>{products.length} products</Text>
-        <Text style={styles.warning}>{lowStockCount} low stock</Text>
+        <View style={styles.summary}>
+          <Text style={styles.summaryLabel}>
+            {t("productCount", { count: products.length })}
+          </Text>
+          <Text style={styles.warning}>
+            {t("lowStockCount", { count: lowStockCount })}
+          </Text>
+        </View>
       </View>
 
-      {/* Product List */}
       <FlatList
+        style={styles.productList}
         data={products}
         keyExtractor={(item) => String(item.id)}
         refreshControl={
@@ -141,13 +159,72 @@ export default function HomeScreen({ navigation }: Props) {
         )}
       />
 
-      {/* Floating Action Button */}
-      <Pressable
-        style={styles.fab}
-        onPress={() => navigation.navigate("AddProduct")}>
-        <MaterialCommunityIcons name="plus" size={22} color="#fff" />
-        <Text style={styles.fabText}>Add product</Text>
-      </Pressable>
+      {isActionMenuOpen && (
+        <Pressable
+          style={styles.menuBackdrop}
+          onPress={() => setIsActionMenuOpen(false)}
+          accessibilityRole="button"
+          accessibilityLabel={t("close")}
+        />
+      )}
+
+      <View
+        style={[
+          styles.fabActions,
+          { bottom: Math.max(insets.bottom, 8) + 114 },
+          isNarrow && styles.fabActionsNarrow,
+        ]}>
+        {isActionMenuOpen && (
+          <>
+            <Pressable
+              style={styles.fabMenuItem}
+              onPress={() => {
+                setIsActionMenuOpen(false);
+                navigation.navigate("Restock");
+              }}
+              accessibilityRole="button"
+              accessibilityLabel={t("restock")}>
+              <Text style={styles.fabMenuLabel}>{t("restock")}</Text>
+              <View style={styles.fabMenuIcon}>
+                <MaterialCommunityIcons
+                  name="package-down"
+                  size={22}
+                  color="#3a2818"
+                />
+              </View>
+            </Pressable>
+            <Pressable
+              style={styles.fabMenuItem}
+              onPress={() => {
+                setIsActionMenuOpen(false);
+                navigation.navigate("AddProduct");
+              }}
+              accessibilityRole="button"
+              accessibilityLabel={t("addProduct")}>
+              <Text style={styles.fabMenuLabel}>{t("addProduct")}</Text>
+              <View style={styles.fabMenuIcon}>
+                <MaterialCommunityIcons
+                  name="package-variant-plus"
+                  size={22}
+                  color="#f36f0a"
+                />
+              </View>
+            </Pressable>
+          </>
+        )}
+        <Pressable
+          style={styles.fabTrigger}
+          onPress={() => setIsActionMenuOpen((isOpen) => !isOpen)}
+          accessibilityRole="button"
+          accessibilityLabel={t("moreOptions")}
+          accessibilityState={{ expanded: isActionMenuOpen }}>
+          <MaterialCommunityIcons
+            name={isActionMenuOpen ? "close" : "plus"}
+            size={28}
+            color="#fff"
+          />
+        </Pressable>
+      </View>
 
       {/* Navigation Bar */}
       <BottomNavBar
@@ -161,6 +238,10 @@ export default function HomeScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: "#fffaf0", padding: 20 },
+  screenNarrow: { padding: 12 },
+  screenWide: { padding: 32 },
+  pageContent: { width: "100%", maxWidth: 1040, alignSelf: "center" },
+  productList: { width: "100%", maxWidth: 1040, alignSelf: "center" },
   summary: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -175,18 +256,48 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingBottom: 160,
   },
-  fab: {
+  menuBackdrop: {
+    ...StyleSheet.absoluteFill,
+    zIndex: 1,
+  },
+  fabActions: {
     position: "absolute",
     right: 20,
-    bottom: 82,
-    backgroundColor: "#f36f0a",
-    borderRadius: 8,
+    alignItems: "flex-end",
+    gap: 10,
+    zIndex: 2,
+  },
+  fabActionsNarrow: { right: 12 },
+  fabMenuItem: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 13,
-    gap: 7,
+    gap: 10,
+  },
+  fabMenuLabel: {
+    color: "#3a2818",
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    fontWeight: "800",
     elevation: 3,
   },
-  fabText: { color: "#fff", fontWeight: "800" },
+  fabMenuIcon: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#fff",
+    elevation: 3,
+  },
+  fabTrigger: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#f36f0a",
+    elevation: 6,
+  },
 });

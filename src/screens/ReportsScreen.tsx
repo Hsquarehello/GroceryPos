@@ -2,11 +2,11 @@
 import React, { useCallback, useState } from "react";
 import {
   Alert,
-  Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
 import DateTimePicker, {
@@ -24,6 +24,8 @@ import {
   Preset,
   ReportPresetFilter,
 } from "../components/layout/ReportPresetFilter";
+import { t } from "../i18n";
+import { getResponsiveContentStyle } from "../utils/responsive";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Reports">;
 
@@ -50,6 +52,8 @@ const formatRouteDate = (date: Date) =>
     .join("-");
 
 export default function ReportsScreen({ navigation }: Props) {
+  const { width } = useWindowDimensions();
+  const isCompact = width < 360;
   const [report, setReport] = useState<DailyReport>(emptyReport);
   const [refreshing, setRefreshing] = useState(false);
   const [startDate, setStartDate] = useState(() => new Date());
@@ -64,7 +68,7 @@ export default function ReportsScreen({ navigation }: Props) {
     try {
       setReport(await getDateRangeReport(startDate, endDate));
     } catch {
-      Alert.alert("Error", "Could not load the selected report.");
+      Alert.alert(t("error"), t("couldNotLoadReport"));
     } finally {
       setRefreshing(false);
     }
@@ -106,7 +110,10 @@ export default function ReportsScreen({ navigation }: Props) {
   return (
     <ScrollView
       style={styles.screen}
-      contentContainerStyle={styles.content}
+      contentContainerStyle={[
+        styles.content,
+        getResponsiveContentStyle(width, 780),
+      ]}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
@@ -114,16 +121,13 @@ export default function ReportsScreen({ navigation }: Props) {
           tintColor="#f36f0a"
         />
       }>
-      <View style={styles.headerRow}>
-        <View>
-          <Text style={styles.eyebrow}>REPORTS</Text>
-          <Text style={styles.heading}>Sales report</Text>
+      <View style={styles.header}>
+        <View style={styles.headerTitle}>
+          <Text style={styles.eyebrow}>{t("reportsEyebrow")}</Text>
+          <Text style={styles.heading} numberOfLines={2} adjustsFontSizeToFit>
+            {t("salesReport")}
+          </Text>
         </View>
-        <Pressable
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}>
-          <MaterialCommunityIcons name="arrow-left" size={19} color="#3a2818" />
-        </Pressable>
       </View>
 
       <ReportPresetFilter
@@ -133,13 +137,13 @@ export default function ReportsScreen({ navigation }: Props) {
 
       <View style={styles.dateRange}>
         <DateButton
-          label="FROM"
+          label={t("from")}
           date={startDate}
           onPress={() => setPickerTarget("start")}
         />
         <MaterialCommunityIcons name="arrow-right" size={18} color="#8a7658" />
         <DateButton
-          label="TO"
+          label={t("to")}
           date={endDate}
           onPress={() => setPickerTarget("end")}
         />
@@ -156,44 +160,45 @@ export default function ReportsScreen({ navigation }: Props) {
       )}
 
       <View style={styles.hero}>
-        <Text style={styles.heroLabel}>NET COLLECTED</Text>
-        <Text style={styles.heroValue}>
+        <Text style={styles.heroLabel}>{t("netCollected")}</Text>
+        <Text
+          style={[styles.heroValue, isCompact && styles.heroValueCompact]}
+          numberOfLines={1}
+          adjustsFontSizeToFit>
           {formatMoney(report.net_collected)}
         </Text>
-        <Text style={styles.heroSubtext}>
-          Actual money received from selected sales, excluding change
-        </Text>
+        <Text style={styles.heroSubtext}>{t("actualMoney")}</Text>
       </View>
 
       <View style={styles.grid}>
         <MetricCard
-          label="Net profit"
+          label={t("netProfit")}
           value={formatMoney(report.profit)}
           icon="chart-line"
           valueColor={report.profit < 0 ? "#c0392b" : undefined}
         />
         <MetricCard
-          label="Revenue"
+          label={t("revenue")}
           value={formatMoney(report.revenue)}
           icon="cash-register"
         />
         <MetricCard
-          label="COGS"
+          label={t("cogs")}
           value={formatMoney(report.cogs)}
           icon="cart-minus"
         />
         <MetricCard
-          label="Discount given"
+          label={t("discountGiven")}
           value={formatMoney(report.discount_total)}
           icon="sale-outline"
         />
         <MetricCard
-          label="Credit outstanding"
+          label={t("creditOutstanding")}
           value={formatMoney(report.credit_outstanding)}
           icon="account-clock-outline"
         />
         <MetricCard
-          label="Transactions"
+          label={t("transactionCount")}
           value={report.transaction_count.toLocaleString()}
           icon="receipt-text-outline"
           onPress={() =>
@@ -204,9 +209,13 @@ export default function ReportsScreen({ navigation }: Props) {
           }
         />
         <MetricCard
-          label="Quantity sold"
-          value={`${report.total_items.toLocaleString()} items`}
-          secondaryValue={`${report.total_weight_tcl.toFixed(2)} tcl`}
+          label={t("quantitySoldMetric")}
+          value={t("itemMetric", {
+            count: report.total_items.toLocaleString(),
+          })}
+          secondaryValue={t("weightMetric", {
+            amount: report.total_weight_tcl.toFixed(2),
+          })}
           icon="scale-balance"
           onPress={() =>
             navigation.navigate("QuantitySold", {
@@ -223,9 +232,7 @@ export default function ReportsScreen({ navigation }: Props) {
           size={18}
           color="#7a6a52"
         />
-        <Text style={styles.noteText}>
-          Profit uses the cost price saved when each sale was completed.
-        </Text>
+        <Text style={styles.noteText}>{t("profitNote")}</Text>
       </View>
     </ScrollView>
   );
@@ -233,13 +240,9 @@ export default function ReportsScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: "#fffaf0" },
-  content: { padding: 20, paddingBottom: 40 },
-  headerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 22,
-  },
+  content: { paddingVertical: 20, paddingBottom: 40 },
+  header: { marginBottom: 22 },
+  headerTitle: { flex: 1, minWidth: 0 },
   eyebrow: {
     color: "#f36f0a",
     fontSize: 11,
@@ -247,16 +250,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
   },
   heading: { color: "#3a2818", fontSize: 30, fontWeight: "800", marginTop: 4 },
-  backButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 10,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "#f0dfb6",
-  },
   hero: {
     backgroundColor: "#f36f0a",
     borderRadius: 14,
@@ -270,6 +263,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
   },
   heroValue: { color: "#fff", fontSize: 32, fontWeight: "900", marginTop: 8 },
+  heroValueCompact: { fontSize: 25 },
   heroSubtext: { color: "#fff3d0", fontSize: 12, marginTop: 8 },
   dateRange: {
     flexDirection: "row",

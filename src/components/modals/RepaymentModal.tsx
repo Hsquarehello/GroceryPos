@@ -7,6 +7,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { t } from "../../i18n";
 import { Customer } from "../../types";
 
 interface RepaymentModalProps {
@@ -34,9 +35,9 @@ export const RepaymentModal: React.FC<RepaymentModalProps> = ({
       onRequestClose={onClose}>
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Record repayment</Text>
+          <Text style={styles.modalTitle}>{t("recordRepayment")}</Text>
           <Text style={styles.modalSubtext}>
-            {selectedCustomer?.name} owes{" "}
+            {selectedCustomer?.name} {t("debt")}{" "}
             {selectedCustomer?.total_debt.toLocaleString()} MMK
           </Text>
           <TextInput
@@ -44,14 +45,14 @@ export const RepaymentModal: React.FC<RepaymentModalProps> = ({
             onChangeText={onChangeRepayment}
             style={styles.input}
             keyboardType="decimal-pad"
-            placeholder="Amount paid"
+            placeholder={t("amountPaid")}
             placeholderTextColor="#9aaa9f"
           />
           <Pressable style={styles.addButton} onPress={onSave}>
-            <Text style={styles.addButtonText}>Save repayment</Text>
+            <Text style={styles.addButtonText}>{t("saveRepayment")}</Text>
           </Pressable>
           <Pressable style={styles.cancelButton} onPress={onClose}>
-            <Text style={styles.cancelText}>Cancel</Text>
+            <Text style={styles.cancelText}>{t("cancel")}</Text>
           </Pressable>
         </View>
       </View>

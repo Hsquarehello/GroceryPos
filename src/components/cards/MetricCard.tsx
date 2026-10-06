@@ -24,11 +24,16 @@ export function MetricCard({
     <View style={[styles.metric, onPress && styles.metricInsidePressable]}>
       <MaterialCommunityIcons name={icon} size={20} color="#f36f0a" />
       <Text style={styles.metricLabel}>{label}</Text>
-      <Text style={[styles.metricValue, valueColor && { color: valueColor }]}>
+      <Text
+        style={[styles.metricValue, valueColor && { color: valueColor }]}
+        numberOfLines={1}
+        adjustsFontSizeToFit>
         {value}
       </Text>
       {secondaryValue && (
-        <Text style={styles.metricSecondaryValue}>{secondaryValue}</Text>
+        <Text style={styles.metricSecondaryValue} numberOfLines={1}>
+          {secondaryValue}
+        </Text>
       )}
     </View>
   );

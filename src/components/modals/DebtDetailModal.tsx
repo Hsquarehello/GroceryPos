@@ -8,7 +8,8 @@ import {
   View,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { CustomerDebtDetail } from "../../database/productRepository";
+import { CustomerDebtDetail } from "../../database";
+import { t } from "../../i18n";
 
 interface DebtDetailModalProps {
   visible: boolean;
@@ -37,9 +38,9 @@ export const DebtDetailModal: React.FC<DebtDetailModalProps> = ({
         <View style={styles.detailModalContent}>
           <View style={styles.detailHeader}>
             <View>
-              <Text style={styles.modalTitle}>Debt history</Text>
+              <Text style={styles.modalTitle}>{t("debtHistory")}</Text>
               <Text style={styles.modalSubtext}>
-                {debtDetail?.name ?? "Customer"}
+                {debtDetail?.name ?? t("customer")}
               </Text>
             </View>
             <Pressable style={styles.closeIconButton} onPress={onClose}>
@@ -48,23 +49,23 @@ export const DebtDetailModal: React.FC<DebtDetailModalProps> = ({
           </View>
 
           {loading ? (
-            <Text style={styles.emptyText}>Loading debt details...</Text>
+            <Text style={styles.emptyText}>{t("loadingDebtDetails")}</Text>
           ) : debtDetail ? (
             <ScrollView showsVerticalScrollIndicator={false}>
               <View style={styles.detailSummaryCard}>
-                <Text style={styles.summaryLabel}>Outstanding</Text>
+                <Text style={styles.summaryLabel}>{t("outstanding")}</Text>
                 <Text style={styles.detailSummaryValue}>
                   {debtDetail.total_debt.toLocaleString()} MMK
                 </Text>
                 <Text style={styles.summaryMeta}>
-                  {debtDetail.sales.length} credit sale
-                  {debtDetail.sales.length === 1 ? "" : "s"} ·{" "}
-                  {debtDetail.repayments.length} repayment
-                  {debtDetail.repayments.length === 1 ? "" : "s"}
+                  {t("debtSummaryMeta", {
+                    sales: debtDetail.sales.length,
+                    repayments: debtDetail.repayments.length,
+                  })}
                 </Text>
               </View>
 
-              <Text style={styles.sectionTitle}>Credit sales</Text>
+              <Text style={styles.sectionTitle}>{t("creditSales")}</Text>
               {debtDetail.sales.length ? (
                 debtDetail.sales.map((sale) => (
                   <Pressable
@@ -76,7 +77,9 @@ export const DebtDetailModal: React.FC<DebtDetailModalProps> = ({
                     onPress={() => onNavigateToTransaction(sale.id)}>
                     <View style={styles.historyRow}>
                       <View style={styles.historyTitleRow}>
-                        <Text style={styles.historyTitle}>Sale #{sale.id}</Text>
+                        <Text style={styles.historyTitle}>
+                          {t("saleNumber", { id: sale.id })}
+                        </Text>
                         <MaterialCommunityIcons
                           name="open-in-new"
                           size={15}
@@ -94,8 +97,10 @@ export const DebtDetailModal: React.FC<DebtDetailModalProps> = ({
                       })}
                     </Text>
                     <Text style={styles.historyMeta}>
-                      Sale total: {sale.total_amount.toLocaleString()} MMK ·
-                      Paid now: {sale.cash_received.toLocaleString()} MMK
+                      {t("saleTotalLabel")}:{" "}
+                      {sale.total_amount.toLocaleString()} MMK ·
+                      {t("paidNowLabel")}: {sale.cash_received.toLocaleString()}{" "}
+                      MMK
                     </Text>
                     {sale.debt_note ? (
                       <Text style={styles.historyNote}>{sale.debt_note}</Text>
@@ -103,16 +108,16 @@ export const DebtDetailModal: React.FC<DebtDetailModalProps> = ({
                   </Pressable>
                 ))
               ) : (
-                <Text style={styles.emptyText}>No credit sales recorded.</Text>
+                <Text style={styles.emptyText}>{t("noCreditSales")}</Text>
               )}
 
-              <Text style={styles.sectionTitle}>Repayments</Text>
+              <Text style={styles.sectionTitle}>{t("repayments")}</Text>
               {debtDetail.repayments.length ? (
                 debtDetail.repayments.map((repaymentItem) => (
                   <View key={repaymentItem.id} style={styles.historyItem}>
                     <View style={styles.historyRow}>
                       <Text style={styles.historyTitle}>
-                        Payment #{repaymentItem.id}
+                        {t("paymentNumber", { id: repaymentItem.id })}
                       </Text>
                       <Text style={styles.historyAmountPositive}>
                         +{repaymentItem.amount_paid.toLocaleString()} MMK
@@ -127,7 +132,7 @@ export const DebtDetailModal: React.FC<DebtDetailModalProps> = ({
                   </View>
                 ))
               ) : (
-                <Text style={styles.emptyText}>No repayments yet.</Text>
+                <Text style={styles.emptyText}>{t("noRepayments")}</Text>
               )}
 
               <Pressable style={styles.addButton} onPress={onRecordPayment}>
@@ -136,11 +141,11 @@ export const DebtDetailModal: React.FC<DebtDetailModalProps> = ({
                   size={17}
                   color="#fff"
                 />
-                <Text style={styles.addButtonText}>Record payment</Text>
+                <Text style={styles.addButtonText}>{t("recordPayment")}</Text>
               </Pressable>
             </ScrollView>
           ) : (
-            <Text style={styles.emptyText}>No debt details available.</Text>
+            <Text style={styles.emptyText}>{t("noDebtDetailsAvailable")}</Text>
           )}
         </View>
       </View>

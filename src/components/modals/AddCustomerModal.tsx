@@ -10,6 +10,7 @@ import {
   View,
 } from "react-native";
 import { createCustomer } from "../../database";
+import { t } from "../../i18n";
 
 interface AddCustomerModalProps {
   visible: boolean;
@@ -38,8 +39,8 @@ export default function AddCustomerModal({
       onSuccess(id);
     } catch (error) {
       Alert.alert(
-        "Could not add customer",
-        error instanceof Error ? error.message : "Please try again.",
+        t("couldNotAddCustomer"),
+        error instanceof Error ? error.message : t("tryAgain"),
       );
     }
   };
@@ -52,29 +53,29 @@ export default function AddCustomerModal({
       onRequestClose={onClose}>
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Add customer</Text>
+          <Text style={styles.modalTitle}>{t("addCustomer")}</Text>
           <TextInput
             style={styles.cashInput}
             value={customerName}
             onChangeText={setCustomerName}
-            placeholder="Name"
+            placeholder={t("name")}
             placeholderTextColor="#9aaa9f"
           />
           <TextInput
             style={styles.cashInput}
             value={customerPhone}
             onChangeText={setCustomerPhone}
-            placeholder="Phone (optional)"
+            placeholder={t("phoneOptional")}
             placeholderTextColor="#9aaa9f"
             keyboardType="phone-pad"
           />
           <Pressable
             style={styles.newCustomerButton}
             onPress={handleSaveCustomer}>
-            <Text style={styles.newCustomerText}>Save customer</Text>
+            <Text style={styles.newCustomerText}>{t("saveCustomer")}</Text>
           </Pressable>
           <Pressable style={styles.closeButton} onPress={onClose}>
-            <Text style={styles.closeButtonText}>Cancel</Text>
+            <Text style={styles.closeButtonText}>{t("cancel")}</Text>
           </Pressable>
         </View>
       </View>

@@ -7,6 +7,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -21,10 +22,13 @@ import CartSummaryFooter from "../components/layout/CartSummaryFooter";
 import MoreOptionsModal from "../components/modals/MoreOptionsModal";
 import CustomerSelectModal from "../components/modals/CustomerSelectModal";
 import AddCustomerModal from "../components/modals/AddCustomerModal";
+import { t } from "../i18n";
+import { getResponsiveContentStyle } from "../utils/responsive";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Cart">;
 
 export default function CartScreen({ navigation }: Props) {
+  const { width } = useWindowDimensions();
   const { items, addItem, decreaseItem, removeItem, clear, setQuantity } =
     useCartStore();
   const [cash, setCash] = useState("");
@@ -123,20 +127,26 @@ export default function CartScreen({ navigation }: Props) {
       setPaymentType("CASH");
       setSelectedCustomerId(null);
       Alert.alert(
-        "Sale complete",
+        t("saleComplete"),
         paymentType === "CREDIT"
           ? cashValue === 0
-            ? `Full credit: ${sale.total_amount.toLocaleString()} MMK owed by ${selectedCustomer?.name}.`
-            : `Split payment: ${(
-                sale.total_amount - cashValue
-              ).toLocaleString()} MMK remains owed by ${selectedCustomer?.name}.`
-          : `Change: ${sale.change_amount.toLocaleString()} MMK`,
-        [{ text: "Done", onPress: () => navigation.goBack() }],
+            ? t("fullCredit", {
+                amount: `${sale.total_amount.toLocaleString()} ${t("mmk")}`,
+                customer: selectedCustomer?.name ?? "",
+              })
+            : t("splitPayment", {
+                amount: `${(sale.total_amount - cashValue).toLocaleString()} ${t("mmk")}`,
+                customer: selectedCustomer?.name ?? "",
+              })
+          : t("change", {
+              amount: `${sale.change_amount.toLocaleString()} ${t("mmk")}`,
+            }),
+        [{ text: t("done"), onPress: () => navigation.goBack() }],
       );
     } catch (error) {
       Alert.alert(
-        "Could not complete sale",
-        error instanceof Error ? error.message : "Please try again.",
+        t("couldNotCompleteSale"),
+        error instanceof Error ? error.message : t("tryAgain"),
       );
     } finally {
       setCheckingOut(false);
@@ -149,14 +159,19 @@ export default function CartScreen({ navigation }: Props) {
       behavior={Platform.OS === "ios" ? "padding" : "height"}>
       <View style={styles.screen}>
         <ScrollView
-          contentContainerStyle={styles.content}
+          contentContainerStyle={[
+            styles.content,
+            getResponsiveContentStyle(width, 720),
+          ]}
           keyboardShouldPersistTaps="handled">
           <View style={styles.topline}>
             <View>
-              <Text style={styles.eyebrow}>CURRENT SALE</Text>
-              <Text style={styles.heading}>Checkout</Text>
+              <Text style={styles.eyebrow}>{t("currentSale")}</Text>
+              <Text style={styles.heading}>{t("checkout")}</Text>
             </View>
-            <Text style={styles.itemCount}>{items.length} items</Text>
+            <Text style={styles.itemCount}>
+              {t("itemCount", { count: items.length })}
+            </Text>
           </View>
           {!items.length ? (
             <View style={styles.empty}>
@@ -165,14 +180,12 @@ export default function CartScreen({ navigation }: Props) {
                 size={52}
                 color="#d7e0dc"
               />
-              <Text style={styles.emptyTitle}>Your cart is empty</Text>
-              <Text style={styles.emptyText}>
-                Add products from inventory or scan a barcode.
-              </Text>
+              <Text style={styles.emptyTitle}>{t("cartEmpty")}</Text>
+              <Text style={styles.emptyText}>{t("addFromInventory")}</Text>
               <Pressable
                 style={styles.browse}
                 onPress={() => navigation.goBack()}>
-                <Text style={styles.browseText}>Browse products</Text>
+                <Text style={styles.browseText}>{t("browseProducts")}</Text>
               </Pressable>
             </View>
           ) : (
@@ -187,30 +200,29 @@ export default function CartScreen({ navigation }: Props) {
               />
             ))
           )}
+          {items.length > 0 && (
+            <CartSummaryFooter
+              subtotal={subtotal}
+              netTotal={netTotal}
+              discount={discount}
+              saleNote={saleNote}
+              cash={cash}
+              cashValue={cashValue}
+              change={change}
+              paymentType={paymentType}
+              selectedCustomer={selectedCustomer}
+              selectedCustomerId={selectedCustomerId}
+              debtNote={debtNote}
+              checkingOut={checkingOut}
+              setCash={setCash}
+              setDebtNote={setDebtNote}
+              setPaymentType={setPaymentType}
+              onOpenMoreOptions={openMoreOptions}
+              onOpenCustomerPicker={handleOpenCustomerPicker}
+              onCheckout={checkout}
+            />
+          )}
         </ScrollView>
-
-        {items.length > 0 && (
-          <CartSummaryFooter
-            subtotal={subtotal}
-            netTotal={netTotal}
-            discount={discount}
-            saleNote={saleNote}
-            cash={cash}
-            cashValue={cashValue}
-            change={change}
-            paymentType={paymentType}
-            selectedCustomer={selectedCustomer}
-            selectedCustomerId={selectedCustomerId}
-            debtNote={debtNote}
-            checkingOut={checkingOut}
-            setCash={setCash}
-            setDebtNote={setDebtNote}
-            setPaymentType={setPaymentType}
-            onOpenMoreOptions={openMoreOptions}
-            onOpenCustomerPicker={handleOpenCustomerPicker}
-            onCheckout={checkout}
-          />
-        )}
 
         <MoreOptionsModal
           visible={showMoreOptions}
@@ -251,7 +263,7 @@ export default function CartScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: "#fffaf0" },
-  content: { padding: 20, paddingBottom: 20 },
+  content: { paddingVertical: 20, paddingBottom: 20 },
   topline: {
     flexDirection: "row",
     alignItems: "flex-end",

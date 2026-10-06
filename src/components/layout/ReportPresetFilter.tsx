@@ -1,6 +1,13 @@
 // components/ReportPresetFilter.tsx
 import React from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from "react-native";
+import { t } from "../../i18n";
 
 export type Preset = "today" | "yesterday" | "week" | "month";
 
@@ -35,23 +42,27 @@ interface ReportPresetFilterProps {
 }
 
 const PRESETS: Array<[Preset, string]> = [
-  ["today", "Today"],
-  ["yesterday", "Yesterday"],
-  ["week", "This week"],
-  ["month", "This month"],
+  ["today", t("today")],
+  ["yesterday", t("yesterday")],
+  ["week", t("thisWeek")],
+  ["month", t("thisMonth")],
 ];
 
 export function ReportPresetFilter({
   selectedPreset,
   onSelectPreset,
 }: ReportPresetFilterProps) {
+  const { width } = useWindowDimensions();
+  const isCompact = width < 360;
+
   return (
-    <View style={styles.presetRow}>
+    <View style={[styles.presetRow, isCompact && styles.presetRowCompact]}>
       {PRESETS.map(([preset, label]) => (
         <Pressable
           key={preset}
           style={[
             styles.presetButton,
+            isCompact && styles.presetButtonCompact,
             selectedPreset === preset && styles.presetButtonActive,
           ]}
           onPress={() => onSelectPreset(preset)}>
@@ -74,6 +85,7 @@ const styles = StyleSheet.create({
     gap: 7,
     marginBottom: 10,
   },
+  presetRowCompact: { flexWrap: "wrap" },
   presetButton: {
     flex: 1,
     minHeight: 38,
@@ -83,6 +95,7 @@ const styles = StyleSheet.create({
     borderRadius: 9,
     paddingHorizontal: 5,
   },
+  presetButtonCompact: { flexBasis: "48%", minWidth: 108 },
   presetButtonActive: {
     backgroundColor: "#3a2818",
   },

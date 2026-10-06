@@ -1,5 +1,13 @@
 import React from "react";
-import { Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Modal,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+import { t } from "../../i18n";
 
 interface CustomerFormModalProps {
   visible: boolean;
@@ -29,18 +37,17 @@ export const CustomerFormModal: React.FC<CustomerFormModalProps> = ({
       visible={visible}
       transparent
       animationType="fade"
-      onRequestClose={onClose}
-    >
+      onRequestClose={onClose}>
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
           <Text style={styles.modalTitle}>
-            {isEditing ? "Edit customer" : "Add customer"}
+            {isEditing ? t("editCustomer") : t("addCustomer")}
           </Text>
           <TextInput
             value={name}
             onChangeText={onChangeName}
             style={styles.input}
-            placeholder="Name"
+            placeholder={t("name")}
             placeholderTextColor="#9aaa9f"
           />
           <TextInput
@@ -48,16 +55,16 @@ export const CustomerFormModal: React.FC<CustomerFormModalProps> = ({
             onChangeText={onChangePhone}
             style={styles.input}
             keyboardType="phone-pad"
-            placeholder="Phone (optional)"
+            placeholder={t("phoneOptional")}
             placeholderTextColor="#9aaa9f"
           />
           <Pressable style={styles.addButton} onPress={onSave}>
             <Text style={styles.addButtonText}>
-              {isEditing ? "Update customer" : "Save customer"}
+              {isEditing ? t("updateCustomer") : t("saveCustomer")}
             </Text>
           </Pressable>
           <Pressable style={styles.cancelButton} onPress={onClose}>
-            <Text style={styles.cancelText}>Cancel</Text>
+            <Text style={styles.cancelText}>{t("cancel")}</Text>
           </Pressable>
         </View>
       </View>

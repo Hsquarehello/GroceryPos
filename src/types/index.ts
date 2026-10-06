@@ -2,7 +2,7 @@ export interface Product {
   id?: number;
   barcode: string | null;
   name: string;
-  selling_unit: "unit" | "kg" | "g" | "viss" | "tcl";
+  selling_unit: "unit" | "kg" | "g" | "ပိဿာ" | "ကျပ်သား";
   cost_price: number;
   selling_price: number;
   stock_qty: number;

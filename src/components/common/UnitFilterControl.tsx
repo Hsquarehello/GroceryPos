@@ -1,5 +1,6 @@
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { t } from "../../i18n";
 
 export type UnitFilter = "all" | "items" | "weight";
 
@@ -9,9 +10,9 @@ interface UnitFilterControlProps {
 }
 
 const FILTER_OPTIONS: [UnitFilter, string][] = [
-  ["all", "All"],
-  ["items", "Items"],
-  ["weight", "Weight"],
+  ["all", t("all")],
+  ["items", t("items")],
+  ["weight", t("weight")],
 ];
 
 export function UnitFilterControl({

@@ -8,6 +8,7 @@ import {
   View,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { t } from "../../i18n";
 import { downloadAndInstall, UpdateInfo } from "../../utils/checkVersion";
 
 type Props = {
@@ -45,9 +46,7 @@ export default function UpdateModal({ update, onDismiss }: Props) {
     } catch (error) {
       setDownloadState("error");
       setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "The update could not be downloaded.",
+        error instanceof Error ? error.message : t("updateDownloadError"),
       );
     }
   };
@@ -69,16 +68,15 @@ export default function UpdateModal({ update, onDismiss }: Props) {
               color="#fff"
             />
           </View>
-          <Text style={styles.eyebrow}>GROCERY POS UPDATE</Text>
-          <Text style={styles.title}>A better version is ready</Text>
+          <Text style={styles.eyebrow}>{t("groceryPosUpdate")}</Text>
+          <Text style={styles.title}>{t("updateAvailableTitle")}</Text>
           <Text style={styles.description}>
-            Update to version {update.latestVersion} for the latest improvements
-            and fixes.
+            {t("updateVersionMessage", { version: update.latestVersion })}
           </Text>
 
           {update.releaseNotes.length > 0 && (
             <View style={styles.notes}>
-              <Text style={styles.notesTitle}>What&apos;s new</Text>
+              <Text style={styles.notesTitle}>{t("whatsNew")}</Text>
               {update.releaseNotes.map((note) => (
                 <View key={note} style={styles.noteRow}>
                   <MaterialCommunityIcons
@@ -94,7 +92,7 @@ export default function UpdateModal({ update, onDismiss }: Props) {
 
           {update.sizeMb !== undefined && (
             <Text style={styles.sizeText}>
-              Download size: {update.sizeMb} MB
+              {t("downloadSize", { size: update.sizeMb })}
             </Text>
           )}
 
@@ -107,8 +105,10 @@ export default function UpdateModal({ update, onDismiss }: Props) {
               </View>
               <Text style={styles.progressText}>
                 {progress > 0
-                  ? `Downloading update... ${Math.round(progress * 100)}%`
-                  : "Preparing download..."}
+                  ? t("downloadingUpdate", {
+                      percent: Math.round(progress * 100),
+                    })
+                  : t("preparingDownload")}
               </Text>
             </View>
           )}
@@ -135,21 +135,21 @@ export default function UpdateModal({ update, onDismiss }: Props) {
               <ActivityIndicator color="#fff" />
             ) : (
               <Text style={styles.primaryText}>
-                {downloadState === "error" ? "Retry download" : "Update now"}
+                {downloadState === "error"
+                  ? t("retryDownload")
+                  : t("updateNow")}
               </Text>
             )}
           </Pressable>
 
           {!isForced && !isDownloading && (
             <Pressable style={styles.laterButton} onPress={onDismiss}>
-              <Text style={styles.laterText}>Later</Text>
+              <Text style={styles.laterText}>{t("later")}</Text>
             </Pressable>
           )}
 
           {isForced && (
-            <Text style={styles.requiredText}>
-              This update is required to continue.
-            </Text>
+            <Text style={styles.requiredText}>{t("updateRequired")}</Text>
           )}
         </View>
       </View>

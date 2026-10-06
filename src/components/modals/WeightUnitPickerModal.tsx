@@ -1,17 +1,18 @@
 import React from "react";
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { t } from "../../i18n";
 
-export type SelectedUnit = "pcs" | "kg" | "g" | "viss" | "tcl";
+export type SelectedUnit = "pcs" | "kg" | "g" | "ပိဿာ" | "ကျပ်သား";
 
 export const weightUnits: Array<{
   value: Exclude<SelectedUnit, "pcs">;
   label: string;
 }> = [
-  { value: "kg", label: "kg (Kilograms)" },
-  { value: "g", label: "g (Grams)" },
-  { value: "viss", label: "viss (ပိဿာ)" },
-  { value: "tcl", label: "tcl (ကျပ်သား)" },
+  { value: "kg", label: "kg (ကီလိုဂရမ်)" },
+  { value: "g", label: "g (ဂရမ်)" },
+  { value: "ပိဿာ", label: "ပိဿာ" },
+  { value: "ကျပ်သား", label: "ကျပ်သား" },
 ];
 
 interface Props {
@@ -35,7 +36,7 @@ export function WeightUnitPickerModal({
       onRequestClose={onClose}>
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Select Weight Unit</Text>
+          <Text style={styles.modalTitle}>{t("selectWeightUnit")}</Text>
           {weightUnits.map((unit) => (
             <Pressable
               key={unit.value}
@@ -52,7 +53,7 @@ export function WeightUnitPickerModal({
             </Pressable>
           ))}
           <Pressable style={styles.closeBtn} onPress={onClose}>
-            <Text style={styles.closeText}>Cancel</Text>
+            <Text style={styles.closeText}>{t("apply")}</Text>
           </Pressable>
         </View>
       </View>

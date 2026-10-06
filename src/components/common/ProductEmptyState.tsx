@@ -1,13 +1,18 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { t } from "../../i18n";
 
 export const ProductEmptyState = React.memo(() => {
   return (
     <View style={styles.emptyContainer}>
-      <MaterialCommunityIcons name="package-variant-closed" size={42} color="#d7e0dc" />
-      <Text style={styles.emptyTitle}>No products yet</Text>
-      <Text style={styles.emptyText}>Add your first item to start tracking stock.</Text>
+      <MaterialCommunityIcons
+        name="package-variant-closed"
+        size={42}
+        color="#d7e0dc"
+      />
+      <Text style={styles.emptyTitle}>{t("noProducts")}</Text>
+      <Text style={styles.emptyText}>{t("addFirstProduct")}</Text>
     </View>
   );
 });

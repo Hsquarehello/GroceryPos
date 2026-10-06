@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -27,10 +28,14 @@ import { CustomerCard } from "../components/cards/CustomerCard";
 import { CustomerFormModal } from "../components/modals/CustomerFormModal";
 import { RepaymentModal } from "../components/modals/RepaymentModal";
 import { DebtDetailModal } from "../components/modals/DebtDetailModal";
+import { t } from "../i18n";
+import { getResponsiveContentStyle } from "../utils/responsive";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Customers">;
 
 export default function CustomersScreen({ navigation }: Props) {
+  const { width } = useWindowDimensions();
+  const isCompact = width < 380;
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
@@ -54,7 +59,7 @@ export default function CustomersScreen({ navigation }: Props) {
     try {
       setCustomers(await getCustomers());
     } catch {
-      Alert.alert("Error", "Could not load customers.");
+      Alert.alert(t("error"), t("couldNotLoadCustomers"));
     } finally {
       setRefreshing(false);
     }
@@ -78,9 +83,9 @@ export default function CustomersScreen({ navigation }: Props) {
     } catch (error) {
       Alert.alert(
         editingCustomerId !== null
-          ? "Could not update customer"
-          : "Could not add customer",
-        error instanceof Error ? error.message : "Please try again.",
+          ? t("couldNotUpdateCustomer")
+          : t("couldNotAddCustomer"),
+        error instanceof Error ? error.message : t("tryAgain"),
       );
     }
   };
@@ -187,7 +192,10 @@ export default function CustomersScreen({ navigation }: Props) {
   return (
     <View style={styles.screen}>
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[
+          styles.content,
+          getResponsiveContentStyle(width, 840),
+        ]}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -195,31 +203,28 @@ export default function CustomersScreen({ navigation }: Props) {
             tintColor="#f36f0a"
           />
         }>
-        <View style={styles.headerRow}>
+        <View style={styles.header}>
           <View>
-            <Text style={styles.eyebrow}>ACCOUNTS RECEIVABLE</Text>
-            <Text style={styles.heading}>Customers</Text>
+            <Text style={styles.eyebrow}>{t("accountsReceivable")}</Text>
+            <Text style={styles.heading}>{t("customers")}</Text>
           </View>
-          <Pressable
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}>
-            <MaterialCommunityIcons
-              name="arrow-left"
-              size={19}
-              color="#3a2818"
-            />
-          </Pressable>
         </View>
 
-        <View style={styles.summary}>
+        <View style={[styles.summary, isCompact && styles.summaryCompact]}>
           <View>
-            <Text style={styles.summaryLabel}>Total outstanding</Text>
-            <Text style={styles.summaryValue}>
+            <Text style={styles.summaryLabel}>{t("totalOutstanding")}</Text>
+            <Text
+              style={styles.summaryValue}
+              numberOfLines={1}
+              adjustsFontSizeToFit>
               {totalDebt.toLocaleString()} MMK
             </Text>
           </View>
           <Text style={styles.customerCount}>
-            {visibleCustomers.length} of {customers.length} customers
+            {t("customerCount", {
+              visible: visibleCustomers.length,
+              total: customers.length,
+            })}
           </Text>
         </View>
 
@@ -229,7 +234,7 @@ export default function CustomersScreen({ navigation }: Props) {
             value={search}
             onChangeText={setSearch}
             style={styles.searchInput}
-            placeholder="Search by name or phone"
+            placeholder={t("searchCustomer")}
             placeholderTextColor="#9aaa9f"
             autoCapitalize="none"
             returnKeyType="search"
@@ -238,7 +243,7 @@ export default function CustomersScreen({ navigation }: Props) {
             <Pressable
               style={styles.clearSearch}
               onPress={() => setSearch("")}
-              accessibilityLabel="Clear customer search">
+              accessibilityLabel={t("clearSearch")}>
               <MaterialCommunityIcons
                 name="close-circle"
                 size={19}
@@ -256,7 +261,7 @@ export default function CustomersScreen({ navigation }: Props) {
             size={20}
             color="#fff"
           />
-          <Text style={styles.addButtonText}>Add customer</Text>
+          <Text style={styles.addButtonText}>{t("addCustomer")}</Text>
         </Pressable>
 
         {visibleCustomers.map((customer) => (
@@ -274,10 +279,10 @@ export default function CustomersScreen({ navigation }: Props) {
         ))}
 
         {!customers.length && (
-          <Text style={styles.emptyText}>No customers yet.</Text>
+          <Text style={styles.emptyText}>{t("noCustomers")}</Text>
         )}
         {!!customers.length && !visibleCustomers.length && (
-          <Text style={styles.emptyText}>No matching customers.</Text>
+          <Text style={styles.emptyText}>{t("noMatchingCustomers")}</Text>
         )}
       </ScrollView>
 
@@ -331,13 +336,8 @@ export default function CustomersScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: "#fffaf0" },
-  content: { padding: 20, paddingBottom: 40 },
-  headerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 22,
-  },
+  content: { paddingVertical: 20, paddingBottom: 40 },
+  header: { marginBottom: 22 },
   eyebrow: {
     color: "#f36f0a",
     fontSize: 11,
@@ -345,16 +345,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
   },
   heading: { color: "#3a2818", fontSize: 30, fontWeight: "800", marginTop: 4 },
-  backButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 10,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "#f0dfb6",
-  },
   summary: {
     backgroundColor: "#3a2818",
     borderRadius: 14,
@@ -363,6 +353,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "flex-end",
     marginBottom: 14,
+  },
+  summaryCompact: {
+    flexDirection: "column",
+    alignItems: "flex-start",
+    gap: 10,
   },
   summaryLabel: {
     color: "#b8d1c3",

@@ -2,10 +2,12 @@ import React, { useEffect, useState } from "react";
 import {
   Alert,
   KeyboardAvoidingView,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -16,8 +18,7 @@ import {
   getBaseProducts,
   getProductById,
   ProductInput,
-  updatePackageStock,
-  updateProduct,
+  updateProductDetails,
 } from "../database/productRepository";
 import { Product } from "../types";
 
@@ -33,6 +34,8 @@ import {
   WeightUnitPickerModal,
 } from "../components/modals/WeightUnitPickerModal";
 import { BaseProductPickerModal } from "../components/modals/BaseProductPickerModal";
+import { t } from "../i18n";
+import { getResponsiveContentStyle } from "../utils/responsive";
 
 type Props = NativeStackScreenProps<
   RootStackParamList,
@@ -52,9 +55,11 @@ const blankForm: ProductInput = {
 };
 
 export default function AddProductScreen({ navigation, route }: Props) {
+  const { width } = useWindowDimensions();
   const editing = route.name === "EditProduct";
   const params = route.params as
-    { productId?: number; barcode?: string } | undefined;
+    | { productId?: number; barcode?: string }
+    | undefined;
 
   const productId = editing ? params?.productId : undefined;
   const initialBarcode = params?.barcode;
@@ -159,26 +164,20 @@ export default function AddProductScreen({ navigation, route }: Props) {
 
   const saveProductHandler = async () => {
     if (!form.name.trim()) {
-      Alert.alert("Missing Detail", "Please enter product name.");
+      Alert.alert(t("missingDetail"), t("enterProductName"));
       return;
     }
     if (form.selling_price <= 0) {
-      Alert.alert("Invalid Price", "Selling price must be greater than zero.");
+      Alert.alert(t("invalidPrice"), t("priceGreaterZero"));
       return;
     }
     if (!form.is_base_unit) {
       if (!form.parent_id) {
-        Alert.alert(
-          "Missing Base Product",
-          "Please select a base product for this package.",
-        );
+        Alert.alert(t("missingBaseProduct"), t("selectBaseProduct"));
         return;
       }
       if (form.conversion_rate <= 1) {
-        Alert.alert(
-          "Invalid Conversion Rate",
-          "Base units per package must be greater than 1.",
-        );
+        Alert.alert(t("invalidConversion"), t("conversionGreaterOne"));
         return;
       }
     }
@@ -186,10 +185,11 @@ export default function AddProductScreen({ navigation, route }: Props) {
     setSaving(true);
     try {
       if (editing && productId !== undefined) {
-        await updateProduct(productId, form);
-        if (!form.is_base_unit && targetPackageQty !== calculatedPackageStock) {
-          await updatePackageStock(form, targetPackageQty);
-        }
+        await updateProductDetails(productId, {
+          name: form.name,
+          barcode: form.barcode,
+          selling_price: form.selling_price,
+        });
       } else {
         const newId = await createProduct(form);
         if (!form.is_base_unit && initialPackageQty > 0) {
@@ -199,8 +199,8 @@ export default function AddProductScreen({ navigation, route }: Props) {
       navigation.goBack();
     } catch (error) {
       Alert.alert(
-        "Error",
-        error instanceof Error ? error.message : "Failed to save product.",
+        t("error"),
+        error instanceof Error ? error.message : t("failedSaveProduct"),
       );
     } finally {
       setSaving(false);
@@ -208,16 +208,21 @@ export default function AddProductScreen({ navigation, route }: Props) {
   };
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior="height">
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}>
       <ScrollView
         style={styles.container}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[
+          styles.content,
+          getResponsiveContentStyle(width, 760),
+        ]}
         keyboardShouldPersistTaps="handled">
         {/* Header Section */}
         <View style={styles.header}>
-          <Text style={styles.eyebrow}>INVENTORY MANAGEMENT</Text>
+          <Text style={styles.eyebrow}>{t("inventoryManagement")}</Text>
           <Text style={styles.headerTitle}>
-            {editing ? "Edit Product" : "Add New Product"}
+            {editing ? t("editProduct") : t("addNewProduct")}
           </Text>
         </View>
 
@@ -232,36 +237,39 @@ export default function AddProductScreen({ navigation, route }: Props) {
           }
         />
 
-        {/* 2. Unit & Packaging Config */}
-        <ProductUnitConfigForm
-          unitCategory={unitCategory}
-          selectedUnit={selectedUnit}
-          isBaseUnit={form.is_base_unit}
-          selectedParent={selectedParent}
-          conversionRate={form.conversion_rate}
-          onSelectUnitCategory={selectUnitCategory}
-          onOpenWeightPicker={() => setShowWeightPicker(true)}
-          onToggleBaseUnit={(isBase) => {
-            if (isBase) {
-              setForm((prev) => ({
-                ...prev,
-                is_base_unit: true,
-                parent_id: null,
-                conversion_rate: 1,
-              }));
-            } else {
-              setUnitCategory("unit");
-              setSelectedUnit("pcs");
-              setForm((prev) => ({
-                ...prev,
-                is_base_unit: false,
-                selling_unit: "unit",
-              }));
+        {!editing && (
+          <ProductUnitConfigForm
+            unitCategory={unitCategory}
+            selectedUnit={selectedUnit}
+            isBaseUnit={form.is_base_unit}
+            selectedParent={selectedParent}
+            conversionRate={form.conversion_rate}
+            onSelectUnitCategory={selectUnitCategory}
+            onOpenWeightPicker={() => setShowWeightPicker(true)}
+            onToggleBaseUnit={(isBase) => {
+              if (isBase) {
+                setForm((prev) => ({
+                  ...prev,
+                  is_base_unit: true,
+                  parent_id: null,
+                  conversion_rate: 1,
+                }));
+              } else {
+                setUnitCategory("unit");
+                setSelectedUnit("pcs");
+                setForm((prev) => ({
+                  ...prev,
+                  is_base_unit: false,
+                  selling_unit: "unit",
+                }));
+              }
+            }}
+            onOpenParentPicker={() => setShowPicker(true)}
+            onUpdateConversionRate={(val) =>
+              updateField("conversion_rate", val)
             }
-          }}
-          onOpenParentPicker={() => setShowPicker(true)}
-          onUpdateConversionRate={(val) => updateField("conversion_rate", val)}
-        />
+          />
+        )}
 
         {/* 3. Pricing & Stock */}
         <ProductPricingStockForm
@@ -286,7 +294,7 @@ export default function AddProductScreen({ navigation, route }: Props) {
           onPress={saveProductHandler}
           disabled={saving}>
           <Text style={styles.saveBtnText}>
-            {saving ? "Saving..." : editing ? "Update Product" : "Save Product"}
+            {saving ? t("saving") : editing ? t("update") : t("save")}
           </Text>
         </Pressable>
 
@@ -314,7 +322,7 @@ export default function AddProductScreen({ navigation, route }: Props) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fffaf0" },
-  content: { padding: 20, paddingBottom: 120 },
+  content: { paddingVertical: 20, paddingBottom: 120 },
   header: { marginBottom: 20 },
   eyebrow: {
     color: "#f36f0a",

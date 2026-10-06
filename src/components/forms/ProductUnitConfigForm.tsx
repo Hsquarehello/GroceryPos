@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Product } from "../../types";
 import { SelectedUnit, weightUnits } from "../modals/WeightUnitPickerModal";
+import { t } from "../../i18n";
 
 export type UnitCategory = "unit" | "weight";
 
@@ -39,8 +40,8 @@ export function ProductUnitConfigForm({
 
   return (
     <View style={styles.card}>
-      <Text style={styles.cardTitle}>Unit & Packaging Config</Text>
-      <Text style={styles.label}>Product Unit Category</Text>
+      <Text style={styles.cardTitle}>{t("unitPackaging")}</Text>
+      <Text style={styles.label}>{t("unitCategory")}</Text>
 
       <View style={styles.segmentContainer}>
         {(["unit", "weight"] as const).map((category) => (
@@ -56,7 +57,7 @@ export function ProductUnitConfigForm({
                 styles.segmentText,
                 unitCategory === category && styles.segmentActiveText,
               ]}>
-              {category === "unit" ? "By Unit" : "By Weight"}
+              {category === "unit" ? t("byUnit") : t("byWeight")}
             </Text>
           </Pressable>
         ))}
@@ -64,7 +65,7 @@ export function ProductUnitConfigForm({
 
       {unitCategory === "weight" && (
         <>
-          <Text style={styles.label}>Select Weight Unit</Text>
+          <Text style={styles.label}>{t("selectWeight")}</Text>
           <Pressable style={styles.pickerTrigger} onPress={onOpenWeightPicker}>
             <Text style={styles.pickerText}>{selectedUnitLabel}</Text>
             <MaterialCommunityIcons
@@ -76,9 +77,7 @@ export function ProductUnitConfigForm({
         </>
       )}
 
-      <Text style={styles.infoSubtext}>
-        Price and stock use the selected unit. Barcode is optional.
-      </Text>
+      <Text style={styles.infoSubtext}>{t("selectedUnitInfo")}</Text>
 
       <View style={styles.segmentContainer}>
         <Pressable
@@ -89,7 +88,7 @@ export function ProductUnitConfigForm({
               styles.segmentText,
               isBaseUnit && styles.segmentActiveText,
             ]}>
-            Single Unit (Base)
+            {t("singleUnitBase")}
           </Text>
         </Pressable>
 
@@ -101,19 +100,17 @@ export function ProductUnitConfigForm({
               styles.segmentText,
               !isBaseUnit && styles.segmentActiveText,
             ]}>
-            Package / Box
+            {t("packageBox")}
           </Text>
         </Pressable>
       </View>
 
       {!isBaseUnit && (
         <View style={styles.packageBox}>
-          <Text style={styles.label}>Base Product Link *</Text>
+          <Text style={styles.label}>{t("baseProductLink")}</Text>
           <Pressable style={styles.pickerTrigger} onPress={onOpenParentPicker}>
             <Text style={styles.pickerText}>
-              {selectedParent
-                ? selectedParent.name
-                : "-- Select Base Single Unit --"}
+              {selectedParent ? selectedParent.name : t("selectBaseSingle")}
             </Text>
             <MaterialCommunityIcons
               name="chevron-down"
@@ -122,9 +119,7 @@ export function ProductUnitConfigForm({
             />
           </Pressable>
 
-          <Text style={styles.label}>
-            Items Inside Package (Conversion Rate) *
-          </Text>
+          <Text style={styles.label}>{t("conversionRate")}</Text>
           <TextInput
             style={styles.input}
             value={String(conversionRate || "")}

@@ -65,6 +65,7 @@ export const initDatabase = () => {
       FOREIGN KEY (sale_id) REFERENCES sales (id) ON DELETE CASCADE,
       FOREIGN KEY (product_id) REFERENCES products (id)
     );
+
   `);
 
   try {
@@ -176,6 +177,54 @@ export const initDatabase = () => {
       PRAGMA foreign_keys = ON;
     `);
   }
+
+  db.execSync(`
+    CREATE TABLE IF NOT EXISTS product_batches (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      product_id INTEGER NOT NULL,
+      batch_number TEXT,
+      received_qty REAL NOT NULL,
+      remaining_qty REAL NOT NULL,
+      cost_price REAL NOT NULL,
+      origin_product_id INTEGER,
+      received_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE,
+      CHECK (received_qty > 0),
+      CHECK (remaining_qty >= 0 AND remaining_qty <= received_qty)
+    );
+
+    CREATE TABLE IF NOT EXISTS sale_item_batches (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      sale_item_id INTEGER NOT NULL,
+      batch_id INTEGER NOT NULL,
+      quantity REAL NOT NULL,
+      unit_cost REAL NOT NULL,
+      FOREIGN KEY (sale_item_id) REFERENCES sale_items (id) ON DELETE CASCADE,
+      FOREIGN KEY (batch_id) REFERENCES product_batches (id),
+      CHECK (quantity > 0)
+    );
+  `);
+
+  // Package restock များတွင် မည့် package product မှ ဝယ်ယူခဲ့သည်ကို မှတ်တမ်းတင်ရန်
+  try {
+    db.execSync(
+      "ALTER TABLE product_batches ADD COLUMN origin_product_id INTEGER;",
+    );
+  } catch (e) {
+    // Column already exists.
+  }
+
+  db.execSync(`
+    INSERT INTO product_batches (product_id, batch_number, received_qty, remaining_qty, cost_price, received_at)
+    SELECT p.id, 'OPENING', p.stock_qty, p.stock_qty, p.cost_price,
+      COALESCE(p.created_at, CURRENT_TIMESTAMP)
+    FROM products p
+    WHERE p.is_base_unit = 1
+      AND p.stock_qty > 0
+      AND NOT EXISTS (
+        SELECT 1 FROM product_batches b WHERE b.product_id = p.id
+      );
+  `);
 
   console.log("Database Tables initialized successfully!");
 };

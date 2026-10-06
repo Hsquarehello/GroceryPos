@@ -15,7 +15,7 @@ export interface DailyReport {
 
 export interface QuantityLineItem {
   quantity: number;
-  selling_unit: "unit" | "kg" | "g" | "viss" | "tcl";
+  selling_unit: "unit" | "kg" | "g" | "ပိဿာ" | "ကျပ်သား";
 }
 
 export interface QuantityMetrics {
@@ -26,7 +26,7 @@ export interface QuantityMetrics {
 export interface QuantitySoldItem {
   product_id: number;
   product_name: string;
-  selling_unit: "unit" | "kg" | "g" | "viss" | "tcl";
+  selling_unit: "unit" | "kg" | "g" | "ပိဿာ" | "ကျပ်သား";
   quantity: number;
   sale_count: number;
   revenue: number;
@@ -36,8 +36,8 @@ export function toTcl(
   quantity: number,
   unit: QuantityLineItem["selling_unit"],
 ): number {
-  if (unit === "viss") return quantity * 100;
-  if (unit === "tcl") return quantity;
+  if (unit === "ပိဿာ") return quantity * 100;
+  if (unit === "ကျပ်သား") return quantity;
   return 0;
 }
 
@@ -46,7 +46,7 @@ export function calculateQuantityMetrics(
 ): QuantityMetrics {
   return lineItems.reduce(
     (metrics, lineItem) => {
-      if (lineItem.selling_unit === "viss" || lineItem.selling_unit === "tcl") {
+      if (lineItem.selling_unit === "ပိဿာ" || lineItem.selling_unit === "ကျပ်သား") {
         metrics.totalWeightTcl += toTcl(
           lineItem.quantity,
           lineItem.selling_unit,
@@ -75,10 +75,10 @@ export async function getDateRangeReport(
        COALESCE(SUM(si.quantity * COALESCE(NULLIF(si.unit_cost, 0), p.cost_price)), 0) AS cogs,
        COALESCE(SUM(si.quantity * (si.unit_price - COALESCE(NULLIF(si.unit_cost, 0), p.cost_price))), 0) AS profit,
        COUNT(DISTINCT s.id) AS transaction_count,
-       COALESCE(SUM(CASE WHEN p.selling_unit NOT IN ('kg', 'g', 'viss', 'tcl') THEN si.quantity ELSE 0 END), 0) AS total_items,
+       COALESCE(SUM(CASE WHEN p.selling_unit NOT IN ('kg', 'g', 'ပိဿာ', 'ကျပ်သား') THEN si.quantity ELSE 0 END), 0) AS total_items,
        COALESCE(SUM(CASE
-         WHEN p.selling_unit = 'viss' THEN si.quantity * 100
-         WHEN p.selling_unit = 'tcl' THEN si.quantity
+         WHEN p.selling_unit = 'ပိဿာ' THEN si.quantity * 100
+         WHEN p.selling_unit = 'ကျပ်သား' THEN si.quantity
          ELSE 0
        END), 0) AS total_weight_tcl
      FROM sales s

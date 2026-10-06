@@ -1,5 +1,10 @@
+import { locale, t } from "../i18n";
+
+export const formatNumber = (value: number): string =>
+  Math.round(value).toLocaleString(locale);
+
 export const formatMoney = (value: number): string =>
-  `${Math.round(value).toLocaleString()} MMK`;
+  `${formatNumber(value)} ${t("mmk")}`;
 
 export function formatTime(value: string): string {
   const time = value.split(" ")[1] ?? value;

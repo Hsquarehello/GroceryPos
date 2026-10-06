@@ -7,16 +7,19 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../App";
+import { t } from "../i18n";
 import { getProductByBarcode } from "../database/productRepository";
 import { useCartStore } from "../store/useCartStore";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Scanner">;
 export default function ScannerScreen({ navigation, route }: Props) {
+  const { width } = useWindowDimensions();
   const addItem = useCartStore((state) => state.addItem);
   const productMode = route.params?.mode === "product";
   const [permission, requestPermission] = useCameraPermissions();
@@ -30,9 +33,9 @@ export default function ScannerScreen({ navigation, route }: Props) {
     if (productMode) {
       if (product) {
         Alert.alert(
-          "Barcode already registered",
-          `${product.name} already uses this barcode.`,
-          [{ text: "Scan again", onPress: () => setLocked(false) }],
+          t("barcodeAlreadyRegistered"),
+          t("barcodeAlreadyRegisteredMessage", { name: product.name }),
+          [{ text: t("scanAgain"), onPress: () => setLocked(false) }],
         );
       } else {
         navigation.replace("AddProduct", { barcode: value });
@@ -41,50 +44,51 @@ export default function ScannerScreen({ navigation, route }: Props) {
     }
     if (product)
       Alert.alert(
-        "Product found",
-        `${product.name}\nStock: ${product.stock_qty}`,
+        t("productFound"),
+        t("productFoundMessage", {
+          name: product.name,
+          stock: product.stock_qty,
+        }),
         [
           {
-            text: "Add to cart",
+            text: t("addToCart"),
             onPress: () => {
               addItem(product);
               navigation.replace("Home");
             },
           },
           {
-            text: "Edit product",
+            text: t("editProductAction"),
             onPress: () =>
               navigation.replace("EditProduct", { productId: product.id! }),
           },
-          { text: "Scan again", onPress: () => setLocked(false) },
+          { text: t("scanAgain"), onPress: () => setLocked(false) },
         ],
       );
     else
-      Alert.alert("New barcode", "No product uses this barcode yet.", [
+      Alert.alert(t("newBarcode"), t("noProductUsesBarcode"), [
         {
-          text: "Add product",
+          text: t("addProductAction"),
           onPress: () => navigation.replace("AddProduct", { barcode: value }),
         },
-        { text: "Scan again", onPress: () => setLocked(false) },
+        { text: t("scanAgain"), onPress: () => setLocked(false) },
       ]);
   };
 
   if (!permission)
     return (
       <View style={styles.center}>
-        <Text style={styles.muted}>Checking camera permission...</Text>
+        <Text style={styles.muted}>{t("checkingCameraPermission")}</Text>
       </View>
     );
 
   if (!permission.granted)
     return (
       <View style={styles.center}>
-        <Text style={styles.title}>Camera access needed</Text>
-        <Text style={styles.muted}>
-          Use your camera to find or create a product by barcode.
-        </Text>
+        <Text style={styles.title}>{t("cameraPermissionNeeded")}</Text>
+        <Text style={styles.muted}>{t("cameraPermissionDescription")}</Text>
         <Button
-          title="Allow camera"
+          title={t("allowCamera")}
           onPress={requestPermission}
           color="#f36f0a"
         />
@@ -102,13 +106,11 @@ export default function ScannerScreen({ navigation, route }: Props) {
         }}
       />
       <View style={styles.overlay}>
-        <View style={styles.frame} />
-        <Text style={styles.instruction}>
-          Align the barcode inside the frame
-        </Text>
+        <View style={[styles.frame, { width: Math.min(width - 48, 360) }]} />
+        <Text style={styles.instruction}>{t("alignBarcode")}</Text>
       </View>
       <View style={styles.manual}>
-        <Text style={styles.manualLabel}>Or enter barcode manually</Text>
+        <Text style={styles.manualLabel}>{t("orEnterBarcode")}</Text>
         <View style={styles.manualRow}>
           <TextInput
             value={manual}
@@ -118,7 +120,7 @@ export default function ScannerScreen({ navigation, route }: Props) {
               void lookup(manual);
             }}
             keyboardType="number-pad"
-            placeholder="Barcode"
+            placeholder={t("barcode")}
             placeholderTextColor="#8da098"
             style={styles.input}
           />
@@ -128,7 +130,7 @@ export default function ScannerScreen({ navigation, route }: Props) {
               Keyboard.dismiss();
               void lookup(manual);
             }}>
-            <Text style={styles.findText}>Find</Text>
+            <Text style={styles.findText}>{t("find")}</Text>
           </Pressable>
         </View>
       </View>
@@ -150,7 +152,6 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(13,35,30,0.3)",
   },
   frame: {
-    width: 275,
     height: 145,
     borderWidth: 2,
     borderColor: "#f5b25d",

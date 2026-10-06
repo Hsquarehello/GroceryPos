@@ -1,6 +1,7 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { t } from "../../i18n";
 import { QuantitySoldItem } from "../../database";
 
 interface QuantitySoldItemRowProps {
@@ -11,10 +12,10 @@ const formatQuantity = (
   quantity: number,
   unit: QuantitySoldItem["selling_unit"],
 ) =>
-  `${unit === "unit" ? quantity.toLocaleString() : quantity.toFixed(2)} ${unit === "unit" ? "pcs" : unit}`;
+  `${unit === "unit" ? quantity.toLocaleString() : quantity.toFixed(2)} ${unit === "unit" ? t("pcs") : unit}`;
 
 const formatMoney = (value: number) =>
-  `${Math.round(value).toLocaleString()} MMK`;
+  `${Math.round(value).toLocaleString()} ${t("mmk")}`;
 
 export function QuantitySoldItemRow({ item }: QuantitySoldItemRowProps) {
   const isUnit = item.selling_unit === "unit";
@@ -31,7 +32,7 @@ export function QuantitySoldItemRow({ item }: QuantitySoldItemRowProps) {
       <View style={styles.productInfo}>
         <Text style={styles.productName}>{item.product_name}</Text>
         <Text style={styles.saleCount}>
-          {item.sale_count} {item.sale_count === 1 ? "sale" : "sales"}
+          {item.sale_count} {item.sale_count === 1 ? t("sale") : t("sales")}
         </Text>
         <Text style={styles.revenue}>{formatMoney(item.revenue)}</Text>
       </View>
@@ -39,7 +40,7 @@ export function QuantitySoldItemRow({ item }: QuantitySoldItemRowProps) {
         <Text style={styles.quantity}>
           {formatQuantity(item.quantity, item.selling_unit)}
         </Text>
-        <Text style={styles.quantityLabel}>sold</Text>
+        <Text style={styles.quantityLabel}>{t("sold")}</Text>
       </View>
     </View>
   );

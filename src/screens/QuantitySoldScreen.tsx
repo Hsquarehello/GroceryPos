@@ -6,16 +6,14 @@ import {
   RefreshControl,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { RootStackParamList } from "../../App";
-import {
-  getQuantitySoldByDateRange,
-  QuantitySoldItem,
-} from "../database";
+import { getQuantitySoldByDateRange, QuantitySoldItem } from "../database";
 
 import { QuantitySoldHeader } from "../components/layout/QuantitySoldHeader";
 import {
@@ -28,10 +26,13 @@ import {
   SortDirection,
   SortModal,
 } from "../components/modals/SortModal";
+import { t } from "../i18n";
+import { getResponsiveContentStyle } from "../utils/responsive";
 
 type Props = NativeStackScreenProps<RootStackParamList, "QuantitySold">;
 
-export default function QuantitySoldScreen({ navigation, route }: Props) {
+export default function QuantitySoldScreen({ route }: Props) {
+  const { width } = useWindowDimensions();
   const [items, setItems] = useState<QuantitySoldItem[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [unitFilter, setUnitFilter] = useState<UnitFilter>("all");
@@ -61,7 +62,7 @@ export default function QuantitySoldScreen({ navigation, route }: Props) {
     try {
       setItems(await getQuantitySoldByDateRange(startDate, endDate));
     } catch {
-      Alert.alert("Error", "Could not load quantity sold.");
+      Alert.alert(t("error"), t("couldNotLoadQuantity"));
     } finally {
       setRefreshing(false);
     }
@@ -77,7 +78,7 @@ export default function QuantitySoldScreen({ navigation, route }: Props) {
     .filter((item) => {
       if (unitFilter === "items") return item.selling_unit === "unit";
       if (unitFilter === "weight") {
-        return ["kg", "g", "viss", "tcl"].includes(item.selling_unit);
+        return ["kg", "g", "ပိဿာ", "ကျပ်သား"].includes(item.selling_unit);
       }
       return true;
     })
@@ -94,7 +95,10 @@ export default function QuantitySoldScreen({ navigation, route }: Props) {
       <FlatList
         data={filteredItems}
         keyExtractor={(item) => String(item.product_id)}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[
+          styles.content,
+          getResponsiveContentStyle(width, 900),
+        ]}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -104,23 +108,19 @@ export default function QuantitySoldScreen({ navigation, route }: Props) {
         }
         ListHeaderComponent={
           <View>
-            <QuantitySoldHeader
-              startDate={startDate}
-              endDate={endDate}
-              onBackPress={() => navigation.goBack()}
-            />
+            <QuantitySoldHeader startDate={startDate} endDate={endDate} />
             <UnitFilterControl
               selectedFilter={unitFilter}
               onSelectFilter={setUnitFilter}
             />
             <View style={styles.sortRow}>
-              <Text style={styles.sortLabel}>Sort by</Text>
+              <Text style={styles.sortLabel}>{t("sortBy")}</Text>
               <Pressable
                 style={styles.sortSelect}
                 onPress={() => setShowSortMenu(true)}>
                 <Text style={styles.sortSelectText}>
-                  {sortBy === "quantity" ? "Quantity" : "Revenue"} ·{" "}
-                  {sortDirection === "asc" ? "Ascending" : "Descending"}
+                  {sortBy === "quantity" ? t("quantity") : t("revenue")} ·{" "}
+                  {sortDirection === "asc" ? t("ascending") : t("descending")}
                 </Text>
                 <MaterialCommunityIcons
                   name="chevron-down"
@@ -141,14 +141,12 @@ export default function QuantitySoldScreen({ navigation, route }: Props) {
               />
               <Text style={styles.emptyTitle}>
                 {unitFilter === "all"
-                  ? "No quantities sold for this period"
+                  ? t("noQuantityPeriod")
                   : unitFilter === "items"
-                    ? "No item products sold for this period"
-                    : "No weight products sold for this period"}
+                    ? t("noItemPeriod")
+                    : t("noWeightPeriod")}
               </Text>
-              <Text style={styles.emptyText}>
-                Completed sale quantities will appear here.
-              </Text>
+              <Text style={styles.emptyText}>{t("completedQuantities")}</Text>
             </View>
           ) : null
         }
@@ -169,9 +167,10 @@ export default function QuantitySoldScreen({ navigation, route }: Props) {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: "#fffaf0" },
-  content: { padding: 20, paddingBottom: 40, flexGrow: 1 },
+  content: { paddingVertical: 20, paddingBottom: 40, flexGrow: 1 },
   sortRow: {
     flexDirection: "row",
+    flexWrap: "wrap",
     alignItems: "center",
     gap: 9,
     marginBottom: 14,
@@ -189,7 +188,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 11,
     paddingVertical: 9,
   },
-  sortSelectText: { color: "#3a2818", fontSize: 12, fontWeight: "800" },
+  sortSelectText: {
+    color: "#3a2818",
+    fontSize: 12,
+    fontWeight: "800",
+    flexShrink: 1,
+  },
   empty: { alignItems: "center", paddingTop: 100 },
   emptyTitle: {
     color: "#3a2818",
