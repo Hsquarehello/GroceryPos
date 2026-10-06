@@ -6,20 +6,18 @@ import {
   RefreshControl,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
-import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useFocusEffect } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { RootStackParamList } from "../../App";
 import {
   getPurchaseBatches,
   PurchaseBatchEntry,
 } from "../database/productRepository";
 import { formatMoney } from "../utils/formatters";
 import { t } from "../i18n";
-
-type Props = NativeStackScreenProps<RootStackParamList, "PurchaseBatchHistory">;
+import { getResponsiveContentStyle } from "../utils/responsive";
 
 function formatQuantity(
   quantity: number,
@@ -42,7 +40,8 @@ function formatDateTime(value: string): string {
   return `${datePart} · ${timePart.slice(0, 5)}`;
 }
 
-export default function PurchaseBatchHistoryScreen({ navigation }: Props) {
+export default function PurchaseBatchHistoryScreen() {
+  const { width } = useWindowDimensions();
   const [batches, setBatches] = useState<PurchaseBatchEntry[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(0);
@@ -74,7 +73,10 @@ export default function PurchaseBatchHistoryScreen({ navigation }: Props) {
       <FlatList
         data={batches}
         keyExtractor={(item) => String(item.id)}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[
+          styles.content,
+          getResponsiveContentStyle(width, 960),
+        ]}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -84,32 +86,23 @@ export default function PurchaseBatchHistoryScreen({ navigation }: Props) {
         }
         ListHeaderComponent={
           <View style={styles.header}>
-            <View style={styles.headerTop}>
-              <View style={styles.headerIdentity}>
-                <View style={styles.headerIcon}>
-                  <MaterialCommunityIcons
-                    name="package-variant-closed"
-                    size={21}
-                    color="#f36f0a"
-                  />
-                </View>
-                <View>
-                  <Text style={styles.eyebrow}>{t("inventoryManagement")}</Text>
-                  <Text style={styles.heading}>
-                    {t("purchaseBatchHistory")}
-                  </Text>
-                </View>
-              </View>
-              <Pressable
-                style={styles.backButton}
-                onPress={() => navigation.goBack()}
-                hitSlop={8}>
+            <View style={styles.headerIdentity}>
+              <View style={styles.headerIcon}>
                 <MaterialCommunityIcons
-                  name="arrow-left"
-                  size={19}
-                  color="#3a2818"
+                  name="package-variant-closed"
+                  size={21}
+                  color="#f36f0a"
                 />
-              </Pressable>
+              </View>
+              <View style={styles.headerText}>
+                <Text style={styles.eyebrow}>{t("inventoryManagement")}</Text>
+                <Text
+                  style={styles.heading}
+                  numberOfLines={2}
+                  adjustsFontSizeToFit>
+                  {t("purchaseBatchHistory")}
+                </Text>
+              </View>
             </View>
             <Text style={styles.subtitle}>
               {t("purchaseBatchHistorySubtitle")}
@@ -281,14 +274,16 @@ export default function PurchaseBatchHistoryScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: "#fffaf0" },
-  content: { padding: 20, paddingBottom: 40, flexGrow: 1 },
+  content: { paddingVertical: 20, paddingBottom: 40, flexGrow: 1 },
   header: { marginBottom: 18 },
-  headerTop: {
+  headerIdentity: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    gap: 10,
+    flex: 1,
+    minWidth: 0,
   },
-  headerIdentity: { flexDirection: "row", alignItems: "center", gap: 10 },
+  headerText: { flex: 1, minWidth: 0 },
   headerIcon: {
     width: 40,
     height: 40,
@@ -308,16 +303,6 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "800",
     marginTop: 2,
-  },
-  backButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 10,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "#f0dfb6",
   },
   subtitle: {
     color: "#71837a",

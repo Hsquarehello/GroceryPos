@@ -2,10 +2,12 @@ import React, { useEffect, useState } from "react";
 import {
   Alert,
   KeyboardAvoidingView,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -33,6 +35,7 @@ import {
 } from "../components/modals/WeightUnitPickerModal";
 import { BaseProductPickerModal } from "../components/modals/BaseProductPickerModal";
 import { t } from "../i18n";
+import { getResponsiveContentStyle } from "../utils/responsive";
 
 type Props = NativeStackScreenProps<
   RootStackParamList,
@@ -52,6 +55,7 @@ const blankForm: ProductInput = {
 };
 
 export default function AddProductScreen({ navigation, route }: Props) {
+  const { width } = useWindowDimensions();
   const editing = route.name === "EditProduct";
   const params = route.params as
     | { productId?: number; barcode?: string }
@@ -204,10 +208,15 @@ export default function AddProductScreen({ navigation, route }: Props) {
   };
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior="height">
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}>
       <ScrollView
         style={styles.container}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[
+          styles.content,
+          getResponsiveContentStyle(width, 760),
+        ]}
         keyboardShouldPersistTaps="handled">
         {/* Header Section */}
         <View style={styles.header}>
@@ -313,7 +322,7 @@ export default function AddProductScreen({ navigation, route }: Props) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fffaf0" },
-  content: { padding: 20, paddingBottom: 120 },
+  content: { paddingVertical: 20, paddingBottom: 120 },
   header: { marginBottom: 20 },
   eyebrow: {
     color: "#f36f0a",

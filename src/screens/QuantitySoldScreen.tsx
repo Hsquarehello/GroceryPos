@@ -6,6 +6,7 @@ import {
   RefreshControl,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -26,10 +27,12 @@ import {
   SortModal,
 } from "../components/modals/SortModal";
 import { t } from "../i18n";
+import { getResponsiveContentStyle } from "../utils/responsive";
 
 type Props = NativeStackScreenProps<RootStackParamList, "QuantitySold">;
 
-export default function QuantitySoldScreen({ navigation, route }: Props) {
+export default function QuantitySoldScreen({ route }: Props) {
+  const { width } = useWindowDimensions();
   const [items, setItems] = useState<QuantitySoldItem[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [unitFilter, setUnitFilter] = useState<UnitFilter>("all");
@@ -92,7 +95,10 @@ export default function QuantitySoldScreen({ navigation, route }: Props) {
       <FlatList
         data={filteredItems}
         keyExtractor={(item) => String(item.product_id)}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[
+          styles.content,
+          getResponsiveContentStyle(width, 900),
+        ]}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -102,11 +108,7 @@ export default function QuantitySoldScreen({ navigation, route }: Props) {
         }
         ListHeaderComponent={
           <View>
-            <QuantitySoldHeader
-              startDate={startDate}
-              endDate={endDate}
-              onBackPress={() => navigation.goBack()}
-            />
+            <QuantitySoldHeader startDate={startDate} endDate={endDate} />
             <UnitFilterControl
               selectedFilter={unitFilter}
               onSelectFilter={setUnitFilter}
@@ -165,9 +167,10 @@ export default function QuantitySoldScreen({ navigation, route }: Props) {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: "#fffaf0" },
-  content: { padding: 20, paddingBottom: 40, flexGrow: 1 },
+  content: { paddingVertical: 20, paddingBottom: 40, flexGrow: 1 },
   sortRow: {
     flexDirection: "row",
+    flexWrap: "wrap",
     alignItems: "center",
     gap: 9,
     marginBottom: 14,
@@ -185,7 +188,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 11,
     paddingVertical: 9,
   },
-  sortSelectText: { color: "#3a2818", fontSize: 12, fontWeight: "800" },
+  sortSelectText: {
+    color: "#3a2818",
+    fontSize: 12,
+    fontWeight: "800",
+    flexShrink: 1,
+  },
   empty: { alignItems: "center", paddingTop: 100 },
   emptyTitle: {
     color: "#3a2818",

@@ -1,5 +1,12 @@
 import React from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { t } from "../../i18n";
 
@@ -18,6 +25,9 @@ export function ProductBasicInfoForm({
   onUpdateField,
   onScanPress,
 }: Props) {
+  const { width } = useWindowDimensions();
+  const isCompact = width < 360;
+
   return (
     <View style={styles.card}>
       <Text style={styles.cardTitle}>{t("basicDetails")}</Text>
@@ -41,7 +51,9 @@ export function ProductBasicInfoForm({
           placeholderTextColor="#8a9b95"
           keyboardType="number-pad"
         />
-        <Pressable style={styles.scanBtn} onPress={onScanPress}>
+        <Pressable
+          style={[styles.scanBtn, isCompact && styles.scanBtnCompact]}
+          onPress={onScanPress}>
           <MaterialCommunityIcons name="barcode-scan" size={18} color="#fff" />
           <Text style={styles.scanBtnText}>{t("scan")}</Text>
         </Pressable>
@@ -111,4 +123,5 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "800",
   },
+  scanBtnCompact: { minWidth: 96, paddingHorizontal: 10, gap: 5 },
 });

@@ -1,6 +1,13 @@
 // src/components/cart/CartSummaryFooter.tsx
 import React from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Customer } from "../../types";
 import { t } from "../../i18n";
@@ -46,6 +53,8 @@ export default function CartSummaryFooter({
   onOpenCustomerPicker,
   onCheckout,
 }: CartSummaryFooterProps) {
+  const { width } = useWindowDimensions();
+  const isCompact = width < 360;
   const isCheckoutDisabled =
     checkingOut ||
     (paymentType === "CASH"
@@ -53,12 +62,15 @@ export default function CartSummaryFooter({
       : !selectedCustomerId || cashValue < 0 || cashValue > netTotal);
 
   return (
-    <View style={styles.footer}>
+    <View style={[styles.footer, isCompact && styles.footerCompact]}>
       {/* Subtotal */}
       <View style={styles.totalRow}>
         <Text style={styles.totalLabel}>{t("subtotal")}</Text>
         <View style={styles.subtotalActions}>
-          <Text style={styles.subtotalText}>
+          <Text
+            style={styles.subtotalText}
+            numberOfLines={1}
+            adjustsFontSizeToFit>
             {subtotal.toLocaleString()} {t("mmk")}
           </Text>
           <Pressable
@@ -85,7 +97,7 @@ export default function CartSummaryFooter({
       {/* Net Total */}
       <View style={[styles.totalRow, { marginTop: 8 }]}>
         <Text style={styles.totalLabel}>{t("netTotal")}</Text>
-        <Text style={styles.total}>
+        <Text style={styles.total} numberOfLines={1} adjustsFontSizeToFit>
           {netTotal.toLocaleString()} {t("mmk")}
         </Text>
       </View>
@@ -148,7 +160,7 @@ export default function CartSummaryFooter({
           <Pressable
             style={styles.customerPicker}
             onPress={onOpenCustomerPicker}>
-            <Text style={styles.customerPickerText}>
+            <Text style={styles.customerPickerText} numberOfLines={1}>
               {selectedCustomer?.name ?? t("selectCustomer")}
             </Text>
             <MaterialCommunityIcons
@@ -203,12 +215,15 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     padding: 16,
   },
+  footerCompact: { padding: 12 },
   totalRow: {
     flexDirection: "row",
+    flexWrap: "wrap",
     justifyContent: "space-between",
     alignItems: "center",
+    gap: 8,
   },
-  subtotalActions: { alignItems: "flex-end", gap: 6 },
+  subtotalActions: { alignItems: "flex-end", gap: 6, flexShrink: 1 },
   moreOptionsButton: {
     flexDirection: "row",
     alignItems: "center",
@@ -295,7 +310,14 @@ const styles = StyleSheet.create({
     padding: 12,
     marginTop: 10,
   },
-  customerPickerText: { color: "#3a2818", fontSize: 15, fontWeight: "700" },
+  customerPickerText: {
+    color: "#3a2818",
+    fontSize: 15,
+    fontWeight: "700",
+    flex: 1,
+    minWidth: 0,
+    marginRight: 8,
+  },
   creditSummary: {
     flexDirection: "row",
     justifyContent: "space-between",

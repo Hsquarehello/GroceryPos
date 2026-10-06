@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
@@ -18,6 +19,7 @@ import { useCartStore } from "../store/useCartStore";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Scanner">;
 export default function ScannerScreen({ navigation, route }: Props) {
+  const { width } = useWindowDimensions();
   const addItem = useCartStore((state) => state.addItem);
   const productMode = route.params?.mode === "product";
   const [permission, requestPermission] = useCameraPermissions();
@@ -104,7 +106,7 @@ export default function ScannerScreen({ navigation, route }: Props) {
         }}
       />
       <View style={styles.overlay}>
-        <View style={styles.frame} />
+        <View style={[styles.frame, { width: Math.min(width - 48, 360) }]} />
         <Text style={styles.instruction}>{t("alignBarcode")}</Text>
       </View>
       <View style={styles.manual}>
@@ -150,7 +152,6 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(13,35,30,0.3)",
   },
   frame: {
-    width: 275,
     height: 145,
     borderWidth: 2,
     borderColor: "#f5b25d",

@@ -1,6 +1,13 @@
 import React from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { t } from "../../i18n";
 
 interface BottomNavBarProps {
@@ -11,8 +18,19 @@ interface BottomNavBarProps {
 
 export const BottomNavBar = React.memo(
   ({ activeRoute, cartSize, onNavigate }: BottomNavBarProps) => {
+    const { width } = useWindowDimensions();
+    const insets = useSafeAreaInsets();
+
     return (
-      <View style={styles.navBar}>
+      <View
+        style={[
+          styles.navBar,
+          {
+            bottom: Math.max(insets.bottom, 8),
+            left: width < 360 ? 8 : 16,
+            right: width < 360 ? 8 : 16,
+          },
+        ]}>
         <NavItem
           icon="home-variant"
           label={t("home")}
@@ -66,7 +84,10 @@ function NavItem({
 }: NavItemProps) {
   return (
     <Pressable
-      style={({ pressed }) => [styles.navItem, pressed && styles.navItemPressed]}
+      style={({ pressed }) => [
+        styles.navItem,
+        pressed && styles.navItemPressed,
+      ]}
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={label}>
@@ -85,11 +106,10 @@ function NavItem({
         )}
       </View>
       <Text
-        style={[
-          styles.navLabel,
-          active && styles.navLabelActive,
-        ]}
-        numberOfLines={1}>
+        style={[styles.navLabel, active && styles.navLabelActive]}
+        numberOfLines={2}
+        adjustsFontSizeToFit
+        minimumFontScale={0.8}>
         {label}
       </Text>
     </Pressable>
@@ -99,10 +119,7 @@ function NavItem({
 const styles = StyleSheet.create({
   navBar: {
     position: "absolute",
-    left: 16,
-    right: 16,
-    bottom: 14,
-    height: 72,
+    height: 94,
     borderRadius: 22,
     backgroundColor: "#ffffff",
     borderWidth: 1,
@@ -111,7 +128,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-around",
     paddingHorizontal: 8,
-    paddingVertical: 8,
+    paddingVertical: 6,
     elevation: 8,
     shadowColor: "#6b481d",
     shadowOpacity: 0.15,
@@ -123,15 +140,17 @@ const styles = StyleSheet.create({
     height: "100%",
     alignItems: "center",
     justifyContent: "center",
-    gap: 3,
+    gap: 2,
+    minWidth: 0,
+    paddingHorizontal: 1,
     borderRadius: 16,
   },
   navItemPressed: {
     opacity: 0.7,
   },
   navIconWrap: {
-    width: 42,
-    height: 34,
+    width: 40,
+    height: 32,
     borderRadius: 17,
     alignItems: "center",
     justifyContent: "center",
@@ -141,9 +160,11 @@ const styles = StyleSheet.create({
   },
   navLabel: {
     color: "#71837a",
-    fontSize: 9,
+    width: "100%",
+    fontSize: 10,
     fontWeight: "700",
-    maxWidth: 56,
+    flexShrink: 1,
+    lineHeight: 18,
     textAlign: "center",
   },
   navLabelActive: {

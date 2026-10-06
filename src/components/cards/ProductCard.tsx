@@ -82,7 +82,9 @@ function ProductCard({
                 styles.stockText,
                 isOutOfStock && styles.outText,
                 isLowStock && styles.lowText,
-              ]}>
+              ]}
+              numberOfLines={1}
+              adjustsFontSizeToFit>
               {isOutOfStock
                 ? t("outOfStock")
                 : `${item.stock_qty} ${item.is_base_unit ? item.selling_unit : t("package")}`}
@@ -127,6 +129,7 @@ const styles = StyleSheet.create({
   },
   details: {
     flex: 1,
+    minWidth: 0,
     justifyContent: "center",
     paddingRight: 8,
   },

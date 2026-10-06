@@ -1,5 +1,12 @@
 import React from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { t } from "../../i18n";
 
@@ -11,12 +18,19 @@ interface HomeHeaderProps {
 
 export const HomeHeader = React.memo(
   ({ search, onSearchChange, onScanPress }: HomeHeaderProps) => {
+    const { width } = useWindowDimensions();
+
     return (
       <View>
         <View style={styles.headerRow}>
-          <View>
+          <View style={styles.headingContainer}>
             <Text style={styles.eyebrow}>{t("inventory")}</Text>
-            <Text style={styles.heading}>{t("yourProducts")}</Text>
+            <Text
+              style={[styles.heading, width < 360 && styles.headingNarrow]}
+              numberOfLines={1}
+              adjustsFontSizeToFit>
+              {t("yourProducts")}
+            </Text>
           </View>
           <View style={styles.headerActions}>
             <Pressable style={styles.scanButton} onPress={onScanPress}>
@@ -49,6 +63,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 22,
   },
+  headingContainer: { flex: 1, minWidth: 0, marginRight: 8 },
   headerActions: { flexDirection: "row", alignItems: "center", gap: 8 },
   eyebrow: {
     color: "#f36f0a",
@@ -57,6 +72,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
   },
   heading: { color: "#3a2818", fontSize: 30, fontWeight: "800", marginTop: 4 },
+  headingNarrow: { fontSize: 26 },
   scanButton: {
     flexDirection: "row",
     alignItems: "center",

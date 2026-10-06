@@ -2,11 +2,11 @@
 import React, { useCallback, useState } from "react";
 import {
   Alert,
-  Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
 import DateTimePicker, {
@@ -25,6 +25,7 @@ import {
   ReportPresetFilter,
 } from "../components/layout/ReportPresetFilter";
 import { t } from "../i18n";
+import { getResponsiveContentStyle } from "../utils/responsive";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Reports">;
 
@@ -51,6 +52,8 @@ const formatRouteDate = (date: Date) =>
     .join("-");
 
 export default function ReportsScreen({ navigation }: Props) {
+  const { width } = useWindowDimensions();
+  const isCompact = width < 360;
   const [report, setReport] = useState<DailyReport>(emptyReport);
   const [refreshing, setRefreshing] = useState(false);
   const [startDate, setStartDate] = useState(() => new Date());
@@ -107,7 +110,10 @@ export default function ReportsScreen({ navigation }: Props) {
   return (
     <ScrollView
       style={styles.screen}
-      contentContainerStyle={styles.content}
+      contentContainerStyle={[
+        styles.content,
+        getResponsiveContentStyle(width, 780),
+      ]}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
@@ -115,16 +121,13 @@ export default function ReportsScreen({ navigation }: Props) {
           tintColor="#f36f0a"
         />
       }>
-      <View style={styles.headerRow}>
-        <View>
+      <View style={styles.header}>
+        <View style={styles.headerTitle}>
           <Text style={styles.eyebrow}>{t("reportsEyebrow")}</Text>
-          <Text style={styles.heading}>{t("salesReport")}</Text>
+          <Text style={styles.heading} numberOfLines={2} adjustsFontSizeToFit>
+            {t("salesReport")}
+          </Text>
         </View>
-        <Pressable
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}>
-          <MaterialCommunityIcons name="arrow-left" size={19} color="#3a2818" />
-        </Pressable>
       </View>
 
       <ReportPresetFilter
@@ -158,7 +161,10 @@ export default function ReportsScreen({ navigation }: Props) {
 
       <View style={styles.hero}>
         <Text style={styles.heroLabel}>{t("netCollected")}</Text>
-        <Text style={styles.heroValue}>
+        <Text
+          style={[styles.heroValue, isCompact && styles.heroValueCompact]}
+          numberOfLines={1}
+          adjustsFontSizeToFit>
           {formatMoney(report.net_collected)}
         </Text>
         <Text style={styles.heroSubtext}>{t("actualMoney")}</Text>
@@ -234,13 +240,9 @@ export default function ReportsScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: "#fffaf0" },
-  content: { padding: 20, paddingBottom: 40 },
-  headerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 22,
-  },
+  content: { paddingVertical: 20, paddingBottom: 40 },
+  header: { marginBottom: 22 },
+  headerTitle: { flex: 1, minWidth: 0 },
   eyebrow: {
     color: "#f36f0a",
     fontSize: 11,
@@ -248,16 +250,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
   },
   heading: { color: "#3a2818", fontSize: 30, fontWeight: "800", marginTop: 4 },
-  backButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 10,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "#f0dfb6",
-  },
   hero: {
     backgroundColor: "#f36f0a",
     borderRadius: 14,
@@ -271,6 +263,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
   },
   heroValue: { color: "#fff", fontSize: 32, fontWeight: "900", marginTop: 8 },
+  heroValueCompact: { fontSize: 25 },
   heroSubtext: { color: "#fff3d0", fontSize: 12, marginTop: 8 },
   dateRange: {
     flexDirection: "row",

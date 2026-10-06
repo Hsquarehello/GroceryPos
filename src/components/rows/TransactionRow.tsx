@@ -31,11 +31,11 @@ export function TransactionRow({ transaction, onPress }: TransactionRowProps) {
               color={isCredit ? "#bd6337" : "#f36f0a"}
             />
           </View>
-          <View>
-            <Text style={styles.transactionTitle}>
+          <View style={styles.transactionText}>
+            <Text style={styles.transactionTitle} numberOfLines={1}>
               {t("saleNumber", { id: transaction.id })}
             </Text>
-            <Text style={styles.transactionMeta}>
+            <Text style={styles.transactionMeta} numberOfLines={2}>
               {formatTime(transaction.created_at)} ·{" "}
               {t("itemMetric", {
                 count: transaction.item_count,
@@ -67,7 +67,7 @@ export function TransactionRow({ transaction, onPress }: TransactionRowProps) {
       <View style={styles.divider} />
       <View style={styles.amountRow}>
         <Text style={styles.amountLabel}>{t("saleTotalLabel")}</Text>
-        <Text style={styles.amountValue}>
+        <Text style={styles.amountValue} numberOfLines={1} adjustsFontSizeToFit>
           {formatMoney(transaction.total_amount)}
         </Text>
       </View>
@@ -75,7 +75,7 @@ export function TransactionRow({ transaction, onPress }: TransactionRowProps) {
         <Text style={styles.amountLabel}>
           {isCredit ? t("paidNowLabel") : t("collected")}
         </Text>
-        <Text style={styles.amountValue}>
+        <Text style={styles.amountValue} numberOfLines={1} adjustsFontSizeToFit>
           {formatMoney(
             isCredit ? transaction.cash_received : transaction.total_amount,
           )}
@@ -84,7 +84,9 @@ export function TransactionRow({ transaction, onPress }: TransactionRowProps) {
       {isCredit && (
         <View style={styles.amountRow}>
           <Text style={styles.dueLabel}>{t("outstanding")}</Text>
-          <Text style={styles.dueValue}>{formatMoney(amountDue)}</Text>
+          <Text style={styles.dueValue} numberOfLines={1} adjustsFontSizeToFit>
+            {formatMoney(amountDue)}
+          </Text>
         </View>
       )}
       {isCredit && transaction.customer_name && (
@@ -94,7 +96,9 @@ export function TransactionRow({ transaction, onPress }: TransactionRowProps) {
             size={15}
             color="#7a6a52"
           />
-          <Text style={styles.customerText}>{transaction.customer_name}</Text>
+          <Text style={styles.customerText} numberOfLines={2}>
+            {transaction.customer_name}
+          </Text>
         </View>
       )}
     </Pressable>
@@ -116,7 +120,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
-  transactionIdentity: { flexDirection: "row", alignItems: "center", gap: 10 },
+  transactionIdentity: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    flex: 1,
+    minWidth: 0,
+    marginRight: 8,
+  },
   iconCircle: {
     width: 38,
     height: 38,
@@ -127,6 +138,7 @@ const styles = StyleSheet.create({
   },
   transactionTitle: { color: "#3a2818", fontSize: 15, fontWeight: "800" },
   transactionMeta: { color: "#8a7658", fontSize: 12, marginTop: 3 },
+  transactionText: { flex: 1, minWidth: 0 },
   badge: {
     backgroundColor: "#fff1c2",
     borderRadius: 6,
@@ -145,15 +157,33 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 5,
   },
-  amountLabel: { color: "#8a7658", fontSize: 13 },
-  amountValue: { color: "#3a2818", fontSize: 13, fontWeight: "800" },
+  amountLabel: { color: "#8a7658", fontSize: 13, flex: 1, minWidth: 0 },
+  amountValue: {
+    color: "#3a2818",
+    fontSize: 13,
+    fontWeight: "800",
+    flexShrink: 1,
+    textAlign: "right",
+  },
   dueLabel: { color: "#bd6337", fontSize: 13, fontWeight: "700" },
-  dueValue: { color: "#bd6337", fontSize: 13, fontWeight: "900" },
+  dueValue: {
+    color: "#bd6337",
+    fontSize: 13,
+    fontWeight: "900",
+    flexShrink: 1,
+    textAlign: "right",
+  },
   customerRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
     marginTop: 10,
   },
-  customerText: { color: "#7a6a52", fontSize: 12, fontWeight: "700" },
+  customerText: {
+    color: "#7a6a52",
+    fontSize: 12,
+    fontWeight: "700",
+    flex: 1,
+    minWidth: 0,
+  },
 });

@@ -7,6 +7,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -22,10 +23,12 @@ import MoreOptionsModal from "../components/modals/MoreOptionsModal";
 import CustomerSelectModal from "../components/modals/CustomerSelectModal";
 import AddCustomerModal from "../components/modals/AddCustomerModal";
 import { t } from "../i18n";
+import { getResponsiveContentStyle } from "../utils/responsive";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Cart">;
 
 export default function CartScreen({ navigation }: Props) {
+  const { width } = useWindowDimensions();
   const { items, addItem, decreaseItem, removeItem, clear, setQuantity } =
     useCartStore();
   const [cash, setCash] = useState("");
@@ -156,7 +159,10 @@ export default function CartScreen({ navigation }: Props) {
       behavior={Platform.OS === "ios" ? "padding" : "height"}>
       <View style={styles.screen}>
         <ScrollView
-          contentContainerStyle={styles.content}
+          contentContainerStyle={[
+            styles.content,
+            getResponsiveContentStyle(width, 720),
+          ]}
           keyboardShouldPersistTaps="handled">
           <View style={styles.topline}>
             <View>
@@ -194,30 +200,29 @@ export default function CartScreen({ navigation }: Props) {
               />
             ))
           )}
+          {items.length > 0 && (
+            <CartSummaryFooter
+              subtotal={subtotal}
+              netTotal={netTotal}
+              discount={discount}
+              saleNote={saleNote}
+              cash={cash}
+              cashValue={cashValue}
+              change={change}
+              paymentType={paymentType}
+              selectedCustomer={selectedCustomer}
+              selectedCustomerId={selectedCustomerId}
+              debtNote={debtNote}
+              checkingOut={checkingOut}
+              setCash={setCash}
+              setDebtNote={setDebtNote}
+              setPaymentType={setPaymentType}
+              onOpenMoreOptions={openMoreOptions}
+              onOpenCustomerPicker={handleOpenCustomerPicker}
+              onCheckout={checkout}
+            />
+          )}
         </ScrollView>
-
-        {items.length > 0 && (
-          <CartSummaryFooter
-            subtotal={subtotal}
-            netTotal={netTotal}
-            discount={discount}
-            saleNote={saleNote}
-            cash={cash}
-            cashValue={cashValue}
-            change={change}
-            paymentType={paymentType}
-            selectedCustomer={selectedCustomer}
-            selectedCustomerId={selectedCustomerId}
-            debtNote={debtNote}
-            checkingOut={checkingOut}
-            setCash={setCash}
-            setDebtNote={setDebtNote}
-            setPaymentType={setPaymentType}
-            onOpenMoreOptions={openMoreOptions}
-            onOpenCustomerPicker={handleOpenCustomerPicker}
-            onCheckout={checkout}
-          />
-        )}
 
         <MoreOptionsModal
           visible={showMoreOptions}
@@ -258,7 +263,7 @@ export default function CartScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: "#fffaf0" },
-  content: { padding: 20, paddingBottom: 20 },
+  content: { paddingVertical: 20, paddingBottom: 20 },
   topline: {
     flexDirection: "row",
     alignItems: "flex-end",

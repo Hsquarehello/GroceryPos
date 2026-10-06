@@ -6,6 +6,7 @@ import {
   RefreshControl,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -21,10 +22,12 @@ import {
 import { TransactionRow } from "../components/rows/TransactionRow";
 import { TransactionDetailModal } from "../components/modals/TransactionDetailModal";
 import { t } from "../i18n";
+import { getResponsiveContentStyle } from "../utils/responsive";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Transactions">;
 
 export default function TransactionsScreen({ navigation, route }: Props) {
+  const { width } = useWindowDimensions();
   const [transactions, setTransactions] = useState<TransactionSummary[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(0);
@@ -102,7 +105,10 @@ export default function TransactionsScreen({ navigation, route }: Props) {
       <FlatList
         data={transactions}
         keyExtractor={(item) => String(item.id)}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[
+          styles.content,
+          getResponsiveContentStyle(width, 900),
+        ]}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -120,15 +126,6 @@ export default function TransactionsScreen({ navigation, route }: Props) {
               </Text>
               <Text style={styles.heading}>{t("transactions")}</Text>
             </View>
-            <Pressable
-              style={styles.backButton}
-              onPress={() => navigation.goBack()}>
-              <MaterialCommunityIcons
-                name="arrow-left"
-                size={19}
-                color="#3a2818"
-              />
-            </Pressable>
           </View>
         }
         ListEmptyComponent={
@@ -212,13 +209,8 @@ export default function TransactionsScreen({ navigation, route }: Props) {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: "#fffaf0" },
-  content: { padding: 20, paddingBottom: 40, flexGrow: 1 },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 18,
-  },
+  content: { paddingVertical: 20, paddingBottom: 40, flexGrow: 1 },
+  header: { marginBottom: 18 },
   eyebrow: {
     color: "#f36f0a",
     fontSize: 11,
@@ -226,16 +218,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
   },
   heading: { color: "#3a2818", fontSize: 30, fontWeight: "800", marginTop: 4 },
-  backButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 10,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "#f0dfb6",
-  },
   empty: { alignItems: "center", paddingTop: 100 },
   emptyTitle: {
     color: "#3a2818",
@@ -246,8 +228,10 @@ const styles = StyleSheet.create({
   emptyText: { color: "#8a7658", marginTop: 6 },
   pagination: {
     flexDirection: "row",
+    flexWrap: "wrap",
     alignItems: "center",
     justifyContent: "space-between",
+    gap: 8,
     marginTop: 6,
     paddingVertical: 8,
   },

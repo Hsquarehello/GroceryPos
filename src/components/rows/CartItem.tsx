@@ -98,7 +98,7 @@ function CartItem({
           </Pressable>
         </View>
 
-        <Text style={styles.lineTotal}>
+        <Text style={styles.lineTotal} numberOfLines={1} adjustsFontSizeToFit>
           {(item.selling_price * item.quantity).toLocaleString()}{" "}
           <Text style={styles.currency}>{t("mmk")}</Text>
         </Text>
@@ -142,8 +142,10 @@ const styles = StyleSheet.create({
   },
   actionRow: {
     flexDirection: "row",
+    flexWrap: "wrap",
     justifyContent: "space-between",
     alignItems: "center",
+    gap: 8,
     marginTop: 12,
     paddingTop: 10,
     borderTopWidth: 1,
@@ -187,6 +189,8 @@ const styles = StyleSheet.create({
     color: "#f36f0a",
     fontSize: 16,
     fontWeight: "800",
+    flexShrink: 1,
+    textAlign: "right",
   },
   currency: {
     fontSize: 11,
